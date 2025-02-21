@@ -10,23 +10,23 @@ pipeline {
 
     stages {
 
-       stage('Checkout Code') {
-           steps {
-               script {
-                   git branch: 'main', url: 'https://github.com/Aymenjallouli/Devops.git'
-                   sh 'tree -L 3' // Affiche l'arborescence sur 3 niveaux
-               }
-           }
-       }
-
-
-        stage('Verify pom.xml') {
+        stage('Checkout Code') {
             steps {
                 script {
-                    sh 'if [ ! -f pom.xml ]; then echo "pom.xml NOT FOUND!"; exit 1; fi'
+                    git branch: 'main', url: 'https://github.com/Aymenjallouli/Devops.git'
+                    sh 'ls -l'  // Vérifier si les fichiers sont bien présents
                 }
             }
         }
+        stage('Verify Repository Structure') {
+            steps {
+                script {
+                    sh 'ls -R'  // Afficher la structure des fichiers
+                }
+            }
+        }
+
+
 
         stage('Install dependencies') {
             steps {
