@@ -31,7 +31,7 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 script {
-                    sh 'cd $WORKSPACE && mvn clean install'
+                    sh ' mvn clean install'
                 }
             }
         }
@@ -39,7 +39,7 @@ pipeline {
         stage('Unit Test') {
             steps {
                 script {
-                    sh 'cd $WORKSPACE && mvn test'
+                    sh ' mvn test'
                 }
             }
         }
