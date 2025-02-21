@@ -1,15 +1,12 @@
- 
-# Utiliser une image OpenJDK 17
-FROM openjdk:17-jdk-slim
+FROM maven:3.8.6-openjdk-17 AS builder
 
-# Définir le répertoire de travail dans le conteneur
 WORKDIR /app
+COPY . /app
 
-# Copier le fichier JAR généré par Maven depuis le dossier target
-COPY target/*.jar app.jar
+RUN mvn clean package
 
-# Exposer le port sur lequel l'application tourne
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8089
-
-# Lancer l'application au démarrage du conteneur
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
