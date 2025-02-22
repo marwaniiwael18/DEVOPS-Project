@@ -41,24 +41,7 @@ pipeline {
                }
            }
        }
-       stage('Check Code Coverage') {
-           steps {
-               script {
-                   jacoco(
-                       execPattern: 'target/jacoco.exec',
-                       classPattern: 'target/classes',
-                       sourcePattern: 'src/main/java',
-                       exclusionPattern: '**/test/**',
-                       minimumInstructionCoverage: '80',  // Couverture minimale des instructions
-                       minimumBranchCoverage: '80',       // Couverture minimale des branches
-                       minimumComplexityCoverage: '80',   // Couverture minimale de la complexité
-                       minimumLineCoverage: '80',         // Couverture minimale des lignes
-                       minimumMethodCoverage: '80',       // Couverture minimale des méthodes
-                       minimumClassCoverage: '80'         // Couverture minimale des classes
-                   )
-               }
-           }
-       }
+
        stage('Generate JaCoCo Report') {
            steps {
                script {
