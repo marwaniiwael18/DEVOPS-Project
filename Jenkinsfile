@@ -30,7 +30,7 @@ pipeline {
        stage('Unit Test') {
            steps {
                script {
-                   sh 'mvn test'  // Run tests separately
+                   sh 'mvn test -x'  // Run tests separately
                }
            }
        }
