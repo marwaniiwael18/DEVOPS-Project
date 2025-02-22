@@ -9,17 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import tn.esprit.spring.entities.Instructor;
-import tn.esprit.spring.entities.Course;
+
 import tn.esprit.spring.services.IInstructorServices;
+import tn.esprit.spring.repositories.ICourseRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -157,6 +160,23 @@ public class InstructorRestControllerTest {
 
         verify(instructorServices, never()).retrieveInstructor(anyLong());
     }
+    @Test
+    void testAddInstructorInvalidFirstName() throws Exception {
+        Instructor invalidInstructor = new Instructor();
+        invalidInstructor.setFirstName(null);  // Champ obligatoire manquant
+        invalidInstructor.setLastName("Doe");
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidInstructor)))
+                .andExpect(status().isBadRequest());  // Validation échouée
+    }
+
+
+
+
+
+
 
     // Utility method to create a sample Instructor
     private Instructor createSampleInstructor(Long id, String firstName, String lastName) {

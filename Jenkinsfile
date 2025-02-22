@@ -41,6 +41,43 @@ pipeline {
                }
            }
        }
+       stage('Check Code Coverage') {
+           steps {
+               script {
+                   jacoco(
+                       execPattern: 'target/jacoco.exec',
+                       classPattern: 'target/classes',
+                       sourcePattern: 'src/main/java',
+                       exclusionPattern: '**/test/**',
+                       minimumInstructionCoverage: '80',  // Couverture minimale des instructions
+                       minimumBranchCoverage: '80',       // Couverture minimale des branches
+                       minimumComplexityCoverage: '80',   // Couverture minimale de la complexité
+                       minimumLineCoverage: '80',         // Couverture minimale des lignes
+                       minimumMethodCoverage: '80',       // Couverture minimale des méthodes
+                       minimumClassCoverage: '80'         // Couverture minimale des classes
+                   )
+               }
+           }
+       }
+       stage('Generate JaCoCo Report') {
+           steps {
+               script {
+                   sh 'mvn jacoco:report'  // Génère le rapport JaCoCo
+               }
+           }
+       }
+       stage('Publish JaCoCo Report') {
+           steps {
+               script {
+                   jacoco(
+                       execPattern: 'target/jacoco.exec',  // Emplacement du fichier jacoco.exec
+                       classPattern: 'target/classes',      // Emplacement des classes compilées
+                       sourcePattern: 'src/main/java',      // Emplacement des sources
+                       exclusionPattern: '**/test/**'       // Exclure les fichiers de test
+                   )
+               }
+           }
+       }
 
        stage('SonarQube Analysis') {
            steps {
