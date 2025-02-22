@@ -18,6 +18,7 @@ pipeline {
                 }
             }
         }
+
         stage('Verify Repository Structure') {
             steps {
                 script {
@@ -26,29 +27,18 @@ pipeline {
             }
         }
 
-        stage('Verify Repository Structure') {
+        stage('Install dependencies') {
             steps {
                 script {
-                    sh 'ls -R'  // Afficher la structure des fichiers
+                    sh 'mvn clean install'
                 }
             }
         }
 
-
-
-       stage('Install dependencies') {
-           steps {
-               script {
-                   sh ' mvn clean install'
-               }
-           }
-       }
-
-
         stage('Unit Test') {
             steps {
                 script {
-                    sh ' mvn test'
+                    sh 'mvn test'
                 }
             }
         }
