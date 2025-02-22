@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -40,17 +39,11 @@ public class CourseRestControllerTest {
 
     @BeforeEach
     void setUp() {
-        course = new Course();
-        course.setNumCourse(1L);
-        course.setLevel(2);
-        course.setTypeCourse(TypeCourse.INDIVIDUAL);
-        course.setSupport(Support.SNOWBOARD);
-        course.setPrice(100.5f);
-        course.setTimeSlot(3);
+        course = createSampleCourse(1L, 2, TypeCourse.INDIVIDUAL, Support.SNOWBOARD, 100.5f, 3);
     }
 
     @Test
-    void testAddCourse() throws Exception {
+    void testAddCourseSuccess() throws Exception {
         when(courseServices.addCourse(any(Course.class))).thenReturn(course);
 
         mockMvc.perform(post("/course/add")
@@ -64,8 +57,34 @@ public class CourseRestControllerTest {
     }
 
     @Test
-    void testGetAllCourses() throws Exception {
-        List<Course> courses = Arrays.asList(course, new Course(2L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 150.0f, 2, null));
+    void testAddCourseInvalidInput() throws Exception {
+        Course invalidCourse = new Course(); // Données manquantes ou invalides
+        mockMvc.perform(post("/course/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(invalidCourse)))
+                .andExpect(status().isBadRequest()); // Vérifie que la validation échoue
+
+        verify(courseServices, never()).addCourse(any(Course.class));
+    }
+
+    @Test
+    void testAddCourseThrowsException() throws Exception {
+        when(courseServices.addCourse(any(Course.class))).thenThrow(new RuntimeException("Erreur interne"));
+
+        mockMvc.perform(post("/course/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(course)))
+                .andExpect(status().isInternalServerError());
+
+        verify(courseServices, times(1)).addCourse(any(Course.class));
+    }
+
+    @Test
+    void testGetAllCoursesSuccess() throws Exception {
+        List<Course> courses = Arrays.asList(
+                createSampleCourse(1L, 2, TypeCourse.INDIVIDUAL, Support.SNOWBOARD, 100.5f, 3),
+                createSampleCourse(2L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 150.0f, 2)
+        );
         when(courseServices.retrieveAllCourses()).thenReturn(courses);
 
         mockMvc.perform(get("/course/all"))
@@ -76,7 +95,7 @@ public class CourseRestControllerTest {
     }
 
     @Test
-    void testUpdateCourse() throws Exception {
+    void testUpdateCourseSuccess() throws Exception {
         course.setLevel(5);
         when(courseServices.updateCourse(any(Course.class))).thenReturn(course);
 
@@ -90,7 +109,19 @@ public class CourseRestControllerTest {
     }
 
     @Test
-    void testGetCourseById() throws Exception {
+    void testUpdateCourseNotFound() throws Exception {
+        when(courseServices.updateCourse(any(Course.class))).thenReturn(null);
+
+        mockMvc.perform(put("/course/update")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(course)))
+                .andExpect(status().isNotFound());
+
+        verify(courseServices, times(1)).updateCourse(any(Course.class));
+    }
+
+    @Test
+    void testGetCourseByIdSuccess() throws Exception {
         when(courseServices.retrieveCourse(1L)).thenReturn(course);
 
         mockMvc.perform(get("/course/get/1"))
@@ -101,15 +132,26 @@ public class CourseRestControllerTest {
     }
 
     @Test
-    void testGetCourseById_NotFound() throws Exception {
+    void testGetCourseByIdNotFound() throws Exception {
         when(courseServices.retrieveCourse(5L)).thenReturn(null);
 
         mockMvc.perform(get("/course/get/5"))
-                .andExpect(status().isNotFound());  // Vérifie que le statut est 404
+                .andExpect(status().isNotFound());
 
-        verify(courseServices, times(1)).retrieveCourse(5L);  // Vérifie que la méthode a été appelée
+        verify(courseServices, times(1)).retrieveCourse(5L);
     }
 
 
 
+    // Méthode utilitaire pour créer un objet Course
+    private Course createSampleCourse(Long id, int level, TypeCourse typeCourse, Support support, float price, int timeSlot) {
+        Course course = new Course();
+        course.setNumCourse(id);
+        course.setLevel(level);
+        course.setTypeCourse(typeCourse);
+        course.setSupport(support);
+        course.setPrice(price);
+        course.setTimeSlot(timeSlot);
+        return course;
+    }
 }
