@@ -19,21 +19,21 @@ pipeline {
             }
         }
 
-        stage('Install dependencies') {
-            steps {
-                script {
-                    sh 'mvn clean install'  // Clean the project before installing dependencies
-                }
-            }
-        }
+       stage('Install dependencies') {
+           steps {
+               script {
+                   sh 'mvn clean install -DskipTests'  // Skip tests during installation
+               }
+           }
+       }
 
-        stage('Unit Test') {
-            steps {
-                script {
-                    sh 'mvn test'
-                }
-            }
-        }
+       stage('Unit Test') {
+           steps {
+               script {
+                   sh 'mvn test'  // Run tests separately
+               }
+           }
+       }
 
         stage('SonarQube Analysis') {
             steps {
