@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  mysql_db:
+  mysql_db2:
     image: mysql:8.0
     container_name: mysql_db2
     restart: always
