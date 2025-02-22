@@ -25,9 +25,9 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL5InnoDBDialect
-      SPRING_JPA_OPEN_IN_VIEW: false
+      SPRING_JPA_OPEN_IN_VIEW: "false"
       LOGGING_LEVEL_ROOT: info
       LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
