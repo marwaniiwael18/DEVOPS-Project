@@ -46,7 +46,7 @@ pipeline {
            steps {
                script {
                    def scannerHome = tool 'SonarScan'
-                   withSonarQubeEnv('SonarQube') {
+                   withSonarQubeEnv  {
                        sh """
                            ${scannerHome}/bin/sonar-scanner \
                            -Dsonar.projectKey=CoursTest \
