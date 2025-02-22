@@ -16,8 +16,8 @@
         - spring_network
 
     spring_app:
-      image: 192.168.100.47:8083/springapplication:latest
-      container_name: spring_app
+      image: 192.168.100.47:8083/springapplication:IMAGE_TAG
+      container_name: back
       depends_on:
         - mysql_db
       environment:
