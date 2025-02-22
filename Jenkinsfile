@@ -42,25 +42,7 @@ pipeline {
            }
        }
 
-       stage('Generate JaCoCo Report') {
-           steps {
-               script {
-                   sh 'mvn jacoco:report'  // Génère le rapport JaCoCo
-               }
-           }
-       }
-       stage('Publish JaCoCo Report') {
-           steps {
-               script {
-                   jacoco(
-                       execPattern: 'target/jacoco.exec',  // Emplacement du fichier jacoco.exec
-                       classPattern: 'target/classes',      // Emplacement des classes compilées
-                       sourcePattern: 'src/main/java',      // Emplacement des sources
-                       exclusionPattern: '**/test/**'       // Exclure les fichiers de test
-                   )
-               }
-           }
-       }
+
 
        stage('SonarQube Analysis') {
            steps {
