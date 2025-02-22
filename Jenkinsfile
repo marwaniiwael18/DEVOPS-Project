@@ -4,7 +4,7 @@ pipeline {
     environment {
         registryCredentials = "nexus"
         registry = "192.168.100.47:8083"
-        imageName = "springapplication"
+        imageName = "aymenjallouli_4twin3_thunder_gestionski"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
         gitBranch = "CoursTest"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo

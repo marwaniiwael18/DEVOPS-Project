@@ -17,7 +17,7 @@ services:
 
 
   spring_app:
-    image: 192.168.100.47:8083/springapplication:${imageTag}
+    image: 192.168.100.47:8083/aymenjallouli_4twin3_thunder_gestionski:${imageTag}
   # Utiliser le tag dynamique ici
     container_name: back2
     depends_on:
