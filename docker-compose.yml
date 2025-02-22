@@ -35,7 +35,7 @@ services:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
       LOGGING_LEVEL_TN_ESPRIT_SPRING: DEBUG
     ports:
-      - "8089:8089"
+      - "8087:8087"
     restart: always
     networks:
       - spring_network
