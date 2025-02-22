@@ -123,7 +123,7 @@ public class InstructorRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructor)))  // Use the injected ObjectMapper
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("UpdatedName"));
+                .andExpect(jsonPath(JSON_PATH_FIRST_NAME).value("UpdatedName"));
 
         verify(instructorServices, times(1)).updateInstructor(any(Instructor.class));
     }
