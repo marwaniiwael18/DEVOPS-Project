@@ -5,18 +5,17 @@ pipeline {
         registryCredentials = "nexus"
         registry = "192.168.100.47:8083"
         imageName = "springapplication"
-        imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Generates a unique tag for each build
+        imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
         gitRepo = "https://github.com/Aymenjallouli/Devops.git"
         gitBranch = "CoursTest"
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 script {
                     git branch: gitBranch, url: gitRepo
-                    sh 'ls -l'  // Verify if the files are present
+                    sh 'ls -l'  // Vérifier si les fichiers sont présents
                 }
             }
         }
@@ -24,7 +23,7 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 script {
-                    sh 'mvn clean install'  // Install dependencies, clean the project and compile
+                    sh 'mvn clean install'  // Installer les dépendances, nettoyer et compiler
                 }
             }
         }
@@ -32,7 +31,7 @@ pipeline {
         stage('Check Maven Version') {
             steps {
                 script {
-                    sh 'mvn -v'  // Check Maven version to ensure Maven is installed correctly
+                    sh 'mvn -v'  // Vérifier la version de Maven
                 }
             }
         }
@@ -40,7 +39,7 @@ pipeline {
         stage('Unit Test') {
             steps {
                 script {
-                    sh 'mvn test'  // Run unit tests
+                    sh 'mvn test'  // Exécuter les tests unitaires
                 }
             }
         }
@@ -49,7 +48,7 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarScan'
-                    withSonarQubeEnv  {
+                    withSonarQubeEnv {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=CoursTest \
@@ -67,8 +66,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'ls -l'  // Check if the Dockerfile is present
-                    sh "docker build -t $registry/$imageName:$imageTag ."  // Build Docker image with the appropriate tag
+                    sh 'ls -l'  // Vérifier si le Dockerfile est présent
+                    sh "docker build -t $registry/$imageName:$imageTag ."  // Construire l'image Docker avec le tag approprié
                 }
             }
         }
@@ -77,7 +76,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://$registry", registryCredentials) {
-                        sh "docker push $registry/$imageName:$imageTag"  // Push the Docker image to Nexus registry
+                        sh "docker push $registry/$imageName:$imageTag"  // Pousser l'image Docker vers Nexus
                     }
                 }
             }
@@ -86,7 +85,7 @@ pipeline {
         stage('Stop Services with Docker Compose') {
             steps {
                 script {
-                    sh 'docker-compose down || true'  // Stop any running services, don't fail if no containers are running
+                    sh 'docker-compose down || true'  // Arrêter les services en cours, ne pas échouer si aucun conteneur n'est en cours d'exécution
                 }
             }
         }
@@ -94,13 +93,13 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    // Replace the image tag in docker-compose.yml dynamically
+                    // Remplacer dynamiquement le tag de l'image dans le fichier docker-compose.yml
                     sh "sed -i 's|image: ${registry}/${imageName}:latest|image: ${registry}/${imageName}:${imageTag}|g' docker-compose.yml"
 
-                    // Print the updated docker-compose file for verification
+                    // Vérifier le fichier docker-compose mis à jour
                     sh "cat docker-compose.yml"
 
-                    // Start the services using Docker Compose
+                    // Démarrer les services avec Docker Compose
                     sh 'docker-compose up -d'
                 }
             }
@@ -109,11 +108,11 @@ pipeline {
         stage('Commit Code to Git') {
             steps {
                 script {
-                    sh 'git config --global user.email "aymen.jallouli@esprit.tn"'  // Configure git user
+                    sh 'git config --global user.email "aymen.jallouli@esprit.tn"'  // Configurer l'utilisateur Git
                     sh 'git config --global user.name "Aymenjallouli"'
-                    sh 'git add .'  // Stage the changes
-                    sh 'git commit -m "Automated commit after build and deployment"'  // Commit changes
-                    sh 'git push origin $gitBranch'  // Push to the Git repository
+                    sh 'git add .'  // Ajouter les changements
+                    sh 'git commit -m "Automated commit after build and deployment"'  // Commit des changements
+                    sh 'git push origin $gitBranch'  // Pousser vers le dépôt Git
                 }
             }
         }
