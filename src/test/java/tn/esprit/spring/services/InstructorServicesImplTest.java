@@ -21,6 +21,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class InstructorServicesImplTest {
 
+    // Define constants for repeated values
+    private static final String INSTRUCTOR_FIRST_NAME = "John";
+    private static final String INSTRUCTOR_LAST_NAME = "Doe";
+    private static final String INSTRUCTOR_FIRST_NAME_UPDATED = "Johnny";
+    private static final LocalDate INSTRUCTOR_HIRE_DATE = LocalDate.of(2022, 1, 1);
+    private static final LocalDate INSTRUCTOR_HIRE_DATE_UPDATED = LocalDate.of(2023, 2, 15);
+
     @Mock
     private IInstructorRepository instructorRepository;
 
@@ -37,8 +44,8 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructor() {
-        Instructor instructor = new Instructor(null, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
-        Instructor savedInstructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor savedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
 
         when(instructorRepository.save(any(Instructor.class))).thenReturn(savedInstructor);
 
@@ -52,7 +59,7 @@ class InstructorServicesImplTest {
     @Test
     void testRetrieveAllInstructors() {
         List<Instructor> instructors = Arrays.asList(
-                new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>()),
+                new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>()),
                 new Instructor(2L, "Jane", "Smith", LocalDate.of(2021, 5, 10), new HashSet<>())
         );
 
@@ -67,7 +74,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testRetrieveInstructorFound() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(instructor));
 
         Instructor retrievedInstructor = instructorService.retrieveInstructor(1L);
@@ -89,8 +96,8 @@ class InstructorServicesImplTest {
 
     @Test
     void testUpdateInstructor() {
-        Instructor existingInstructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
-        Instructor updatedInstructor = new Instructor(1L, "Johnny", "Doe", LocalDate.of(2023, 2, 15), new HashSet<>());
+        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
 
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(existingInstructor));
         when(instructorRepository.save(any(Instructor.class))).thenReturn(updatedInstructor);
@@ -98,16 +105,15 @@ class InstructorServicesImplTest {
         Instructor result = instructorService.updateInstructor(updatedInstructor);
 
         assertNotNull(result);
-        assertEquals("Johnny", result.getFirstName());
-        assertEquals(LocalDate.of(2023, 2, 15), result.getDateOfHire());
- // Vérification de la date de naissance mise à jour
+        assertEquals(INSTRUCTOR_FIRST_NAME_UPDATED, result.getFirstName());
+        assertEquals(INSTRUCTOR_HIRE_DATE_UPDATED, result.getDateOfHire());
         verify(instructorRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }
 
     @Test
     void testUpdateInstructorNotFound() {
-        Instructor updatedInstructor = new Instructor(1L, "Johnny", "Doe", LocalDate.of(2023, 2, 15), new HashSet<>());
+        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
         when(instructorRepository.findById(1L)).thenReturn(Optional.empty());
 
         Instructor result = instructorService.updateInstructor(updatedInstructor);
@@ -119,9 +125,9 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourse() {
-        Instructor instructor = new Instructor(null, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         Course course = new Course(1L, 3, null, null, 120.0f, 5, null);
-        Instructor savedInstructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>(Collections.singleton(course)));
+        Instructor savedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>(Collections.singleton(course)));
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(instructorRepository.save(any(Instructor.class))).thenReturn(savedInstructor);
@@ -130,14 +136,14 @@ class InstructorServicesImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.getCourses().size());
-        assertTrue(result.getCourses().contains(course)); // Vérification que le cours est bien assigné
+        assertTrue(result.getCourses().contains(course));
         verify(courseRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }
 
     @Test
     void testAddInstructorAndAssignToCourseNotFound() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 99L);
@@ -146,13 +152,13 @@ class InstructorServicesImplTest {
         verify(courseRepository, times(1)).findById(99L);
         verify(instructorRepository, never()).save(any(Instructor.class));
     }
+
     @Test
-    void testAddInstructorAndAssignToCourse_InstructorAlreadyHasCourses() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+    void testAddInstructorAndAssignToCourseInstructorAlreadyHasCourses() {
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         Course existingCourse = new Course(2L, 3, null, null, 120.0f, 5, null);
         Course newCourse = new Course(1L, 3, null, null, 120.0f, 5, null);
 
-        // Ajoute un cours existant
         instructor.getCourses().add(existingCourse);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(newCourse));
@@ -161,10 +167,11 @@ class InstructorServicesImplTest {
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 1L);
 
         assertNotNull(result);
-        assertEquals(2, result.getCourses().size());  // Vérifie que l'instructeur a bien 2 cours maintenant
+        assertEquals(2, result.getCourses().size());
         verify(courseRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }
+
     @Test
     void testAddInstructorWithNullValues() {
         Instructor instructor = new Instructor(null, null, null, null, null);
@@ -181,7 +188,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testUpdateInstructorWithNullValues() {
-        Instructor existingInstructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         Instructor updatedInstructor = new Instructor(1L, null, null, null, null);
 
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(existingInstructor));
@@ -204,11 +211,9 @@ class InstructorServicesImplTest {
         verify(instructorRepository, never()).findById(anyLong());
     }
 
-
-
     @Test
     void testAddInstructorAndAssignToCourseWithMaxCourses() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
         Course course1 = new Course(1L, 3, null, null, 120.0f, 5, null);
         Course course2 = new Course(2L, 3, null, null, 120.0f, 5, null);
         Course course3 = new Course(3L, 3, null, null, 120.0f, 5, null);
@@ -229,7 +234,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseWithNullCourses() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), null);
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null);
         Course course = new Course(1L, 3, null, null, 120.0f, 5, null);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
@@ -244,23 +249,22 @@ class InstructorServicesImplTest {
     }
 
     @Test
-    void testAddInstructorAndAssignToCourse_CourseNotFound() {
-        Instructor instructor = new Instructor(null, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+    void testAddInstructorAndAssignToCourseCourseNotFound() {
+        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
 
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 99L);
 
-        assertNull(result);  // Vérifier que la méthode retourne bien null
+        assertNull(result);
         verify(courseRepository, times(1)).findById(99L);
-        verify(instructorRepository, never()).save(any(Instructor.class));  // Vérifier que l'instructeur n'est pas sauvegardé
+        verify(instructorRepository, never()).save(any(Instructor.class));
     }
-
 
     @Test
     void testAddInstructorAndAssignToCourseWithExistingCourses() {
         Course existingCourse = new Course(2L, 4, null, null, 150.0f, 10, null);
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>(Collections.singleton(existingCourse)));
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>(Collections.singleton(existingCourse)));
         Course newCourse = new Course(1L, 3, null, null, 120.0f, 5, null);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(newCourse));
@@ -269,7 +273,7 @@ class InstructorServicesImplTest {
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 1L);
 
         assertNotNull(result);
-        assertEquals(2, result.getCourses().size()); // Vérification qu'on a bien 2 cours
+        assertEquals(2, result.getCourses().size());
         assertTrue(result.getCourses().contains(existingCourse));
         assertTrue(result.getCourses().contains(newCourse));
         verify(courseRepository, times(1)).findById(1L);
