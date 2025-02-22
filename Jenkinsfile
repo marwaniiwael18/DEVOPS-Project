@@ -8,6 +8,10 @@ pipeline {
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
         gitBranch = "Aymenjallouli_4twin3_thunder"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo
+        SONAR_URL = "http://192.168.100.47:9000"  // URL de SonarQube
+        SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"  // Token SonarQube
+        SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"  // Clé du projet SonarQube
+        SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"  // Nom du projet SonarQube
     }
 
     stages {
@@ -44,6 +48,18 @@ pipeline {
             }
         }
 
+        stage('Create SonarQube Project') {
+            steps {
+                script {
+                    // Créez un projet SonarQube via l'API
+                    sh """
+                        curl -u ${SONAR_TOKEN}: -X POST "${SONAR_URL}/api/projects/create" \
+                          -d "project=${SONAR_PROJECT_KEY}&name=${SONAR_PROJECT_NAME}"
+                    """
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -51,12 +67,13 @@ pipeline {
                     withSonarQubeEnv {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=CoursTest \
-                            -Dsonar.projectName=CoursTest \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
                             -Dsonar.projectVersion=1.0 \
                             -Dsonar.sources=src \
                             -Dsonar.java.binaries=target/classes \
-                            -Dsonar.sourceEncoding=UTF-8
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.login=${SONAR_TOKEN}
                         """
                     }
                 }
