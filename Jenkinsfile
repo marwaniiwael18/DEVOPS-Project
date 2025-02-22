@@ -102,9 +102,7 @@ pipeline {
                        // Vérifier le fichier après modification
                        sh "cat docker-compose.yml"
 
-                       // Redémarrer l'application proprement
-                       sh "docker-compose down || true"
-                       sh "docker-compose up -d"
+
                    }
                }
            }
