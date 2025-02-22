@@ -19,10 +19,11 @@ pipeline {
             }
         }
 
-        stage('Verify Repository Structure') {
+        stage('Start Services with Docker Compose') {
             steps {
                 script {
-                    sh 'ls -R $WORKSPACE'  // Affiche toute la structure du projet
+                    sh 'docker-compose up -d'
+                    sh 'sleep 20' // Attendre que MySQL soit prêt
                 }
             }
         }
@@ -69,6 +70,14 @@ pipeline {
                     docker.withRegistry("http://$registry", registryCredentials) {
                         sh "docker push $registry/$imageName:$imageTag"
                     }
+                }
+            }
+        }
+
+        stage('Stop Services with Docker Compose') {
+            steps {
+                script {
+                    sh 'docker-compose down'
                 }
             }
         }
