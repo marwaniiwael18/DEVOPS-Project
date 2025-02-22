@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mysql_db:
     image: mysql:8.0
-    container_name: mysql_db
+    container_name: mysql_db2
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -21,7 +21,7 @@ services:
   # Utiliser le tag dynamique ici
     container_name: back2
     depends_on:
-      - mysql_db
+      - mysql_db2
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/stationSki?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
