@@ -90,20 +90,40 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
-            steps {
-                script {
-                    // Remplacer dynamiquement le tag de l'image dans le fichier docker-compose.yml
-                    sh "sed -i 's|image: ${registry}/${imageName}:latest|image: ${registry}/${imageName}:${imageTag}|g' docker-compose.yml"
+       stage('Run Application') {
+           steps {
+               script {
+                   docker.withRegistry("http://$registry", registryCredentials) {
+                       sh "docker pull $registry/$imageName:$imageTag"
 
-                    // Vérifier le fichier docker-compose mis à jour
-                    sh "cat docker-compose.yml"
+                       // Remplacement dynamique de IMAGE_TAG dans docker-compose.yml
+                       sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
 
-                    // Démarrer les services avec Docker Compose
-                    sh 'docker-compose up -d'
-                }
-            }
-        }
+                       // Vérifier le fichier après modification
+                       sh "cat docker-compose.yml"
+
+                       // Redémarrer l'application proprement
+                       sh "docker-compose down || true"
+                       sh "docker-compose up -d"
+                   }
+               }
+           }
+       }
+
+               stage("Run prometheus") {
+                   steps {
+                       script {
+                           sh 'docker start prometheus || docker run -d --name prometheus prom/prometheus'
+                          }
+                   }
+               }
+               stage("Run grafana") {
+                   steps {
+                       script {
+                           sh 'docker start grafana || docker run -d --name grafana grafana/grafana'
+                       }
+                   }
+               }
 
         stage('Commit Code to Git') {
             steps {
