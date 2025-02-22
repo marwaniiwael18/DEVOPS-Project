@@ -26,11 +26,18 @@ pipeline {
                }
            }
        }
+       stage('Check Maven Version') {
+           steps {
+               script {
+                   sh 'mvn -v'
+               }
+           }
+       }
 
        stage('Unit Test') {
            steps {
                script {
-                   sh 'mvn test -x'  // Run tests separately
+                   sh 'mvn test '  // Run tests separately
                }
            }
        }
