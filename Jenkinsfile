@@ -53,6 +53,7 @@ pipeline {
                            -Dsonar.projectName=CoursTest \
                            -Dsonar.projectVersion=1.0 \
                            -Dsonar.sources=src \
+                           -Dsonar.java.binaries=target/classes \
                            -Dsonar.sourceEncoding=UTF-8
                        """
                    }
