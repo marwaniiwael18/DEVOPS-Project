@@ -19,19 +19,10 @@ pipeline {
             }
         }
 
-        stage('Start Services with Docker Compose') {
-            steps {
-                script {
-                    sh 'docker-compose up -d'
-                    sh 'sleep 20' // Attendre que MySQL soit prêt
-                }
-            }
-        }
-
         stage('Install dependencies') {
             steps {
                 script {
-                    sh 'mvn clean install'
+                    sh 'mvn clean install'  // Clean the project before installing dependencies
                 }
             }
         }
@@ -77,7 +68,22 @@ pipeline {
         stage('Stop Services with Docker Compose') {
             steps {
                 script {
-                    sh 'docker-compose down'
+                    sh 'docker-compose down || true'  // Ensure the command doesn't fail if no containers are running
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    // Replace the image tag in docker-compose.yml
+                    sh "sed -i 's|image: ${registry}/${imageName}:latest|image: ${registry}/${imageName}:${imageTag}|g' docker-compose.yml"
+
+                    // Verify the changes
+                    sh "cat docker-compose.yml"
+
+                    // Start the services
+                    sh 'docker-compose up -d'
                 }
             }
         }
