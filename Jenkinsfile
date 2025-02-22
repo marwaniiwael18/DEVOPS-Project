@@ -4,7 +4,7 @@ pipeline {
     environment {
         registryCredentials = "nexus"
         registry = "192.168.100.47:8083"
-        imageName = "SpringApplication"
+        imageName = "apringapplication"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique
     }
 
