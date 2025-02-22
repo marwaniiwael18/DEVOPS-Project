@@ -52,7 +52,7 @@ pipeline {
                         }
                       }
                     }
-        }
+
 
         stage('Build Docker Image') {
             steps {
