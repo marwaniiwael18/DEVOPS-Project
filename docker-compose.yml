@@ -15,8 +15,10 @@ services:
     networks:
       - spring_network
 
+
   spring_app:
-    image: 192.168.100.47:8083/springapplication:${IMAGE_TAG}  # Utiliser le tag dynamique ici
+    image: 192.168.100.47:8083/springapplication:${imageTag}
+  # Utiliser le tag dynamique ici
     container_name: back
     depends_on:
       - mysql_db

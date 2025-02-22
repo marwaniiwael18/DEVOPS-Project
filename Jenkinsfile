@@ -95,6 +95,7 @@ pipeline {
                 script {
                     docker.withRegistry("http://$registry", registryCredentials) {
                         sh "docker pull $registry/$imageName:$imageTag"
+                        sh "sed -i 's|IMAGE_TAG|${imageTag}|g' docker-compose.yml"
 
                         // Remplacement dynamique de IMAGE_TAG dans docker-compose.yml
                         sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
