@@ -42,6 +42,10 @@ public class InstructorRestControllerTest {
     private static final String INSTRUCTOR_ADD_ENDPOINT = "/instructor/add";
     private static final String INSTRUCTOR_UPDATE_ENDPOINT = "/instructor/update";
     private static final String INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT = "/instructor/addAndAssignToCourse/";
+    // Define constants for JSON paths
+    private static final String JSON_PATH_NUM_INSTRUCTOR = "$.numInstructor";
+    private static final String JSON_PATH_FIRST_NAME = "$.firstName";
+    private static final String JSON_PATH_LAST_NAME = "$.lastName";
 
 
     @Autowired
@@ -52,7 +56,7 @@ public class InstructorRestControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
 
         // Create a sample instructor with dummy data
-        instructor = createSampleInstructor(1L, "John", "Doe", "john.doe@example.com");
+        instructor = createSampleInstructor(1L, "John", "Doe");
     }
 
     @Test
@@ -63,9 +67,9 @@ public class InstructorRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructor)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.numInstructor").value(instructor.getNumInstructor()))
-                .andExpect(jsonPath("$.firstName").value(instructor.getFirstName()))
-                .andExpect(jsonPath("$.lastName").value(instructor.getLastName()));
+                .andExpect(jsonPath(JSON_PATH_NUM_INSTRUCTOR).value(instructor.getNumInstructor()))
+                .andExpect(jsonPath(JSON_PATH_FIRST_NAME).value(instructor.getFirstName()))
+                .andExpect(jsonPath(JSON_PATH_LAST_NAME).value(instructor.getLastName()));
         verify(instructorServices, times(1)).addInstructor(any(Instructor.class));
     }
 
@@ -88,17 +92,18 @@ public class InstructorRestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructor)))  // Use the injected ObjectMapper
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.numInstructor").value(instructor.getNumInstructor()))
-                .andExpect(jsonPath("$.firstName").value(instructor.getFirstName()))
-                .andExpect(jsonPath("$.lastName").value(instructor.getLastName()));
+                .andExpect(jsonPath(JSON_PATH_NUM_INSTRUCTOR).value(instructor.getNumInstructor()))
+                .andExpect(jsonPath(JSON_PATH_FIRST_NAME).value(instructor.getFirstName()))
+                .andExpect(jsonPath(JSON_PATH_LAST_NAME).value(instructor.getLastName()));
 
         verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
     }
+
     @Test
     void testGetAllInstructorsSuccess() throws Exception {
         List<Instructor> instructors = Arrays.asList(
-                createSampleInstructor(1L, "John", "Doe", "john.doe@example.com"),
-                createSampleInstructor(2L, "Jane", "Smith", "jane.smith@example.com")
+                createSampleInstructor(1L, "John", "Doe"),
+                createSampleInstructor(2L, "Jane", "Smith")
         );
         when(instructorServices.retrieveAllInstructors()).thenReturn(instructors);
 
@@ -114,7 +119,7 @@ public class InstructorRestControllerTest {
         instructor.setFirstName("UpdatedName");
         when(instructorServices.updateInstructor(any(Instructor.class))).thenReturn(instructor);
 
-        mockMvc.perform(put("/instructor/update")
+        mockMvc.perform(put(INSTRUCTOR_UPDATE_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructor)))  // Use the injected ObjectMapper
                 .andExpect(status().isOk())
@@ -130,7 +135,7 @@ public class InstructorRestControllerTest {
 
         mockMvc.perform(get("/instructor/get/{id-instructor}", 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.numInstructor").value(1L));
+                .andExpect(jsonPath(JSON_PATH_NUM_INSTRUCTOR).value(1L));
 
         verify(instructorServices, times(1)).retrieveInstructor(1L);
     }
@@ -154,7 +159,7 @@ public class InstructorRestControllerTest {
     }
 
     // Utility method to create a sample Instructor
-    private Instructor createSampleInstructor(Long id, String firstName, String lastName, String email) {
+    private Instructor createSampleInstructor(Long id, String firstName, String lastName) {
         Instructor newInstructor = new Instructor();
         newInstructor.setNumInstructor(id);
         newInstructor.setFirstName(firstName);
