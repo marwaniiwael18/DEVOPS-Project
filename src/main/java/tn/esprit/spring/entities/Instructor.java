@@ -9,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,10 +27,18 @@ import lombok.experimental.FieldDefaults;
 public class Instructor implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@NotNull
 	Long numInstructor;
+	@Size(min = 1, max = 50)
+
 	String firstName;
+
+	@NotNull
+	@Size(min = 1, max = 50)
 	String lastName;
+
 	LocalDate dateOfHire;
+
 	@OneToMany
 	Set<Course> courses;
 }

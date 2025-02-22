@@ -3,10 +3,13 @@ package tn.esprit.spring.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.Instructor;
 import tn.esprit.spring.services.IInstructorServices;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Tag(name = "\uD83D\uDC69\u200D\uD83C\uDFEB Instructor Management")
@@ -19,7 +22,7 @@ public class InstructorRestController {
 
     @Operation(description = "Add Instructor")
     @PostMapping("/add")
-    public Instructor addInstructor(@RequestBody Instructor instructor){
+    public Instructor addInstructor(@Valid @RequestBody Instructor instructor){
         return  instructorServices.addInstructor(instructor);
     }
     @Operation(description = "Add Instructor and Assign To Course")
@@ -41,8 +44,12 @@ public class InstructorRestController {
 
     @Operation(description = "Retrieve Instructor by Id")
     @GetMapping("/get/{id-instructor}")
-    public Instructor getById(@PathVariable("id-instructor") Long numInstructor){
-        return instructorServices.retrieveInstructor(numInstructor);
+    public ResponseEntity<Instructor> getById(@PathVariable("id-instructor") Long numInstructor) {
+        Instructor instructor = instructorServices.retrieveInstructor(numInstructor);
+        if (instructor == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(instructor);
     }
 
 }

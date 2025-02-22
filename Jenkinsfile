@@ -22,7 +22,7 @@ pipeline {
        stage('Install dependencies') {
            steps {
                script {
-                   sh 'mvn clean install -DskipTests'  // Skip tests during installation
+                   sh 'mvn clean install '
                }
            }
        }
