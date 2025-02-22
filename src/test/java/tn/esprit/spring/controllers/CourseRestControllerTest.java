@@ -78,7 +78,6 @@ public class CourseRestControllerTest {
 
         verify(courseServices, times(1)).addCourse(any(Course.class));
     }
-
     @Test
     void testGetAllCoursesSuccess() throws Exception {
         List<Course> courses = Arrays.asList(
@@ -119,7 +118,6 @@ public class CourseRestControllerTest {
 
         verify(courseServices, times(1)).updateCourse(any(Course.class));
     }
-
     @Test
     void testGetCourseByIdSuccess() throws Exception {
         when(courseServices.retrieveCourse(1L)).thenReturn(course);

@@ -10,6 +10,7 @@ import tn.esprit.spring.entities.Course;
 import tn.esprit.spring.entities.TypeCourse;
 import tn.esprit.spring.services.ICourseServices;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Tag(name = "\uD83D\uDCDA Course Management")
@@ -22,10 +23,10 @@ public class CourseRestController {
 
     @Operation(description = "Add Course")
     @PostMapping("/add")
-    public Course addCourse(@RequestBody Course course){
-        return  courseServices.addCourse(course);
+    public ResponseEntity<Course> addCourse(@Valid @RequestBody Course course) {
+        Course savedCourse = courseServices.addCourse(course);
+        return ResponseEntity.ok(savedCourse);
     }
-
     @Operation(description = "Retrieve all Courses")
     @GetMapping("/all")
     public List<Course> getAllCourses(){
@@ -34,10 +35,17 @@ public class CourseRestController {
 
     @Operation(description = "Update Course ")
     @PutMapping("/update")
-    public Course updateCourse(@RequestBody Course course){
-        return  courseServices.updateCourse(course);
+    public ResponseEntity<Course> updateCourse(@RequestBody Course course) {
+        Course updatedCourse = courseServices.updateCourse(course);
+        if (updatedCourse == null) {
+            return ResponseEntity.notFound().build(); // Retourne 404 si le cours n'existe pas
+        }
+        return ResponseEntity.ok(updatedCourse);
     }
-
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
     @Operation(description = "Retrieve Course by Id")
     @GetMapping("/get/{id-course}")
     public ResponseEntity<Course> getById(@PathVariable("id-course") Long numCourse) {
