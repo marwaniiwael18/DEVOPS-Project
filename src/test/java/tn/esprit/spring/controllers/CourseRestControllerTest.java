@@ -102,12 +102,12 @@ public class CourseRestControllerTest {
 
     @Test
     void testGetCourseById_NotFound() throws Exception {
-        when(courseServices.retrieveCourse(99L)).thenReturn(null);
+        when(courseServices.retrieveCourse(5L)).thenReturn(null);
 
-        mockMvc.perform(get("/course/get/99"))
+        mockMvc.perform(get("/course/get/5"))
                 .andExpect(status().isNotFound());
 
-        verify(courseServices, times(1)).retrieveCourse(99L);
+        verify(courseServices, times(1)).retrieveCourse(5L);
     }
 
 

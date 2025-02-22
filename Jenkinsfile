@@ -13,11 +13,19 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    git branch: 'main', url: 'https://github.com/Aymenjallouli/Devops.git'
+                    git branch: 'CoursTest', url: 'https://github.com/Aymenjallouli/Devops.git'
                     sh 'ls -l'  // Vérifier si les fichiers sont bien présents
                 }
             }
         }
+        stage('Verify Repository Structure') {
+            steps {
+                script {
+                    sh 'ls -R $WORKSPACE'  // Affiche toute la structure du projet
+                }
+            }
+        }
+
         stage('Verify Repository Structure') {
             steps {
                 script {
@@ -28,13 +36,14 @@ pipeline {
 
 
 
-        stage('Install dependencies') {
-            steps {
-                script {
-                    sh ' mvn clean install'
-                }
-            }
-        }
+       stage('Install dependencies') {
+           steps {
+               script {
+                   sh ' mvn clean install'
+               }
+           }
+       }
+
 
         stage('Unit Test') {
             steps {
