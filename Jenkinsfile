@@ -123,19 +123,21 @@ pipeline {
                    }
                }
 
-        stage('Commit Code to Git') {
-            steps {
-                script {
-                    sh 'git config --global user.email "aymen.jallouli@esprit.tn"'  // Configurer l'utilisateur Git
-                    sh 'git config --global user.name "Aymenjallouli"'
-                    sh 'git add .'  // Ajouter les changements
-                    sh 'git commit -m "Automated commit after build and deployment"'  // Commit des changements
-                    sh 'git push origin $gitBranch'  // Pousser vers le dépôt Git
-                }
-            }
-        }
+      stage('Commit Code to Git') {
+          steps {
+              script {
+                  withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                      sh 'git config --global user.email "aymen.jallouli@esprit.tn"'
+                      sh 'git config --global user.name "Aymenjallouli"'
+                      sh 'git remote set-url origin https://$GIT_USER:$GIT_TOKEN@github.com/Aymenjallouli/Devops.git'
+                      sh 'git add .'
+                      sh 'git commit -m "Automated commit after build and deployment" || echo "No changes to commit"'
+                      sh 'git push origin CoursTest'
+                  }
+              }
+          }
+      }
 
-    }
 
     post {
         success {
