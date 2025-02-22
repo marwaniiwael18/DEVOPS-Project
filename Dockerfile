@@ -1,15 +1,18 @@
 # Étape 1: Construction de l'application avec Maven
-FROM maven:3.8.6-openjdk-11 AS builder
+FROM maven:3.8.8-eclipse-temurin-17 AS builder
 
-
-# Définir le répertoire de travail pour l'étape de construction
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier le contenu du répertoire courant dans /app dans l'image
-COPY . /app
+# Copier seulement les fichiers nécessaires pour optimiser le cache Docker
+COPY pom.xml ./
+RUN mvn dependency:go-offline --no-transfer-progress
+
+# Copier le reste des fichiers du projet
+COPY src/ ./src/
 
 # Construire le projet avec Maven, en évitant les tests
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests --no-transfer-progress && rm -rf /root/.m2/repository
 
 # Étape 2: Créer l'image finale avec OpenJDK pour exécuter le JAR
 FROM openjdk:17-jdk-slim
