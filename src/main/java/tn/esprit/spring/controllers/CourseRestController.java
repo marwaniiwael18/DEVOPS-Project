@@ -3,6 +3,8 @@ package tn.esprit.spring.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.Course;
 import tn.esprit.spring.entities.TypeCourse;
@@ -38,8 +40,13 @@ public class CourseRestController {
 
     @Operation(description = "Retrieve Course by Id")
     @GetMapping("/get/{id-course}")
-    public Course getById(@PathVariable("id-course") Long numCourse){
-        return courseServices.retrieveCourse(numCourse);
+    public ResponseEntity<Course> getById(@PathVariable("id-course") Long numCourse) {
+        Course course = courseServices.retrieveCourse(numCourse);
+        if (course == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // Retourne 404 si le cours n'est pas trouvé
+        }
+        return ResponseEntity.ok(course);  // Retourne le cours avec un statut 200
     }
+
 
 }

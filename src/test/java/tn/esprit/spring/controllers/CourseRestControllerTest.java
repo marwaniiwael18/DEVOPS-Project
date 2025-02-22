@@ -105,10 +105,11 @@ public class CourseRestControllerTest {
         when(courseServices.retrieveCourse(5L)).thenReturn(null);
 
         mockMvc.perform(get("/course/get/5"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());  // Vérifie que le statut est 404
 
-        verify(courseServices, times(1)).retrieveCourse(5L);
+        verify(courseServices, times(1)).retrieveCourse(5L);  // Vérifie que la méthode a été appelée
     }
+
 
 
 }
