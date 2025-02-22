@@ -1,5 +1,6 @@
 # Étape 1: Construction de l'application avec Maven
-FROM maven:3.8.6-openjdk-17 AS builder
+FROM maven:3.8.6-openjdk-11 AS builder
+
 
 # Définir le répertoire de travail pour l'étape de construction
 WORKDIR /app
