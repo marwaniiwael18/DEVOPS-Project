@@ -6,8 +6,8 @@ pipeline {
         registry = "192.168.100.47:8083"
         imageName = "springapplication"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
-        gitRepo = "https://github.com/Aymenjallouli/Devops.git"
         gitBranch = "CoursTest"
+        gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo
     }
 
     stages {
@@ -90,48 +90,48 @@ pipeline {
             }
         }
 
-       stage('Run Application') {
-           steps {
-               script {
-                   docker.withRegistry("http://$registry", registryCredentials) {
-                       sh "docker pull $registry/$imageName:$imageTag"
+        stage('Run Application') {
+            steps {
+                script {
+                    docker.withRegistry("http://$registry", registryCredentials) {
+                        sh "docker pull $registry/$imageName:$imageTag"
 
-                       // Remplacement dynamique de IMAGE_TAG dans docker-compose.yml
-                       sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
+                        // Remplacement dynamique de IMAGE_TAG dans docker-compose.yml
+                        sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
 
-                       // Vérifier le fichier après modification
-                       sh "cat docker-compose.yml"
+                        // Vérifier le fichier après modification
+                        sh "cat docker-compose.yml"
 
+                        // Lancer les services avec Docker Compose
+                        sh "docker-compose up -d"
+                    }
+                }
+            }
+        }
 
-                   }
-               }
-           }
-       }
+        stage("Run Prometheus") {
+            steps {
+                script {
+                    sh 'docker start prometheus || docker run -d --name prometheus prom/prometheus'
+                }
+            }
+        }
 
-               stage("Run prometheus") {
-                   steps {
-                       script {
-                           sh 'docker start prometheus || docker run -d --name prometheus prom/prometheus'
-                          }
-                   }
-               }
-               stage("Run grafana") {
-                   steps {
-                       script {
-                           sh 'docker start grafana || docker run -d --name grafana grafana/grafana'
-                       }
-                   }
-               }
-
-
-
+        stage("Run Grafana") {
+            steps {
+                script {
+                    sh 'docker start grafana || docker run -d --name grafana grafana/grafana'
+                }
+            }
+        }
+    }
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo "Pipeline failed! Check the logs."
+            echo "❌ Pipeline failed! Check the logs."
         }
     }
 }
