@@ -42,16 +42,23 @@ pipeline {
            }
        }
 
-        stage('SonarQube Analysis') {
-              steps{
-              script {
-                            def scannerHome = tool 'scanner'
-                            withSonarQubeEnv {
-                            sh "${scannerHome}/bin/sonar-scanner"
-                                }
-                        }
-                      }
-                    }
+       stage('SonarQube Analysis') {
+           steps {
+               script {
+                   def scannerHome = tool 'SonarScan'
+                   withSonarQubeEnv('SonarQube') {
+                       sh """
+                           ${scannerHome}/bin/sonar-scanner \
+                           -Dsonar.projectKey=CoursTest \
+                           -Dsonar.projectName=CoursTest \
+                           -Dsonar.projectVersion=1.0 \
+                           -Dsonar.sources=src \
+                           -Dsonar.sourceEncoding=UTF-8
+                       """
+                   }
+               }
+           }
+       }
 
 
 
