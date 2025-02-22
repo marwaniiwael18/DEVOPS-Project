@@ -35,10 +35,10 @@ public class CourseRestController {
 
     @Operation(description = "Update Course ")
     @PutMapping("/update")
-    public ResponseEntity<Course> updateCourse(@RequestBody Course course) {
+    public ResponseEntity<Course> updateCourse(@Valid @RequestBody Course course) {
         Course updatedCourse = courseServices.updateCourse(course);
         if (updatedCourse == null) {
-            return ResponseEntity.notFound().build(); // Retourne 404 si le cours n'existe pas
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedCourse);
     }
@@ -46,14 +46,18 @@ public class CourseRestController {
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
-    @Operation(description = "Retrieve Course by Id")
     @GetMapping("/get/{id-course}")
-    public ResponseEntity<Course> getById(@PathVariable("id-course") Long numCourse) {
-        Course course = courseServices.retrieveCourse(numCourse);
-        if (course == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // Retourne 404 si le cours n'est pas trouvé
+    public ResponseEntity<Course> getById(@PathVariable("id-course") String numCourse) {
+        try {
+            Long id = Long.parseLong(numCourse); // Convertir l'ID en Long
+            Course course = courseServices.retrieveCourse(id);
+            if (course == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return ResponseEntity.ok(course);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // Retourne 400 si l'ID est invalide
         }
-        return ResponseEntity.ok(course);  // Retourne le cours avec un statut 200
     }
 
 

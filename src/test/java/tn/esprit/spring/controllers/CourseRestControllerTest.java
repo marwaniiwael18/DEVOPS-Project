@@ -36,6 +36,7 @@ public class CourseRestControllerTest {
     private ICourseServices courseServices;
 
     private Course course;
+    private static final String COURSE_ADD_ENDPOINT = "/course/add";
 
     @BeforeEach
     void setUp() {
@@ -46,7 +47,7 @@ public class CourseRestControllerTest {
     void testAddCourseSuccess() throws Exception {
         when(courseServices.addCourse(any(Course.class))).thenReturn(course);
 
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(COURSE_ADD_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(course)))
                 .andExpect(status().isOk())
@@ -59,7 +60,7 @@ public class CourseRestControllerTest {
     @Test
     void testAddCourseInvalidInput() throws Exception {
         Course invalidCourse = new Course(); // Données manquantes ou invalides
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(COURSE_ADD_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(invalidCourse)))
                 .andExpect(status().isBadRequest()); // Vérifie que la validation échoue
@@ -71,7 +72,7 @@ public class CourseRestControllerTest {
     void testAddCourseThrowsException() throws Exception {
         when(courseServices.addCourse(any(Course.class))).thenThrow(new RuntimeException("Erreur interne"));
 
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(COURSE_ADD_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(course)))
                 .andExpect(status().isInternalServerError());
@@ -138,7 +139,33 @@ public class CourseRestControllerTest {
 
         verify(courseServices, times(1)).retrieveCourse(5L);
     }
+    @Test
+    void testGetCourseByIdInvalidId() throws Exception {
+        mockMvc.perform(get("/course/get/invalid"))
+                .andExpect(status().isBadRequest());
 
+        verify(courseServices, never()).retrieveCourse(anyLong());
+    }
+    @Test
+    void testUpdateCourseInvalidInput() throws Exception {
+        Course invalidCourse = new Course(); // Données manquantes ou invalides
+        mockMvc.perform(put("/course/update")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(invalidCourse)))
+                .andExpect(status().isBadRequest());
+
+        verify(courseServices, never()).updateCourse(any(Course.class));
+    }
+    @Test
+    void testGetAllCoursesEmptyList() throws Exception {
+        when(courseServices.retrieveAllCourses()).thenReturn(List.of());
+
+        mockMvc.perform(get("/course/all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(0));
+
+        verify(courseServices, times(1)).retrieveAllCourses();
+    }
 
 
     // Méthode utilitaire pour créer un objet Course
