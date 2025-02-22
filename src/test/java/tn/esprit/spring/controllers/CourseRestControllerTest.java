@@ -37,6 +37,7 @@ public class CourseRestControllerTest {
 
     private Course course;
     private static final String COURSE_ADD_ENDPOINT = "/course/add";
+    private static final String COURSE_UPDATE_ENDPOINT = "/course/update";
 
     @BeforeEach
     void setUp() {
@@ -99,7 +100,7 @@ public class CourseRestControllerTest {
         course.setLevel(5);
         when(courseServices.updateCourse(any(Course.class))).thenReturn(course);
 
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(COURSE_UPDATE_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(course)))
                 .andExpect(status().isOk())
@@ -112,7 +113,7 @@ public class CourseRestControllerTest {
     void testUpdateCourseNotFound() throws Exception {
         when(courseServices.updateCourse(any(Course.class))).thenReturn(null);
 
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(COURSE_UPDATE_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(course)))
                 .andExpect(status().isNotFound());
@@ -149,7 +150,7 @@ public class CourseRestControllerTest {
     @Test
     void testUpdateCourseInvalidInput() throws Exception {
         Course invalidCourse = new Course(); // Données manquantes ou invalides
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(COURSE_UPDATE_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(invalidCourse)))
                 .andExpect(status().isBadRequest());
@@ -170,13 +171,13 @@ public class CourseRestControllerTest {
 
     // Méthode utilitaire pour créer un objet Course
     private Course createSampleCourse(Long id, int level, TypeCourse typeCourse, Support support, float price, int timeSlot) {
-        Course course = new Course();
-        course.setNumCourse(id);
-        course.setLevel(level);
-        course.setTypeCourse(typeCourse);
-        course.setSupport(support);
-        course.setPrice(price);
-        course.setTimeSlot(timeSlot);
-        return course;
+        Course newCourse = new Course();  // Renommez la variable locale
+        newCourse.setNumCourse(id);
+        newCourse.setLevel(level);
+        newCourse.setTypeCourse(typeCourse);
+        newCourse.setSupport(support);
+        newCourse.setPrice(price);
+        newCourse.setTimeSlot(timeSlot);
+        return newCourse;
     }
 }
