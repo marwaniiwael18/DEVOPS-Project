@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 public class CourseRestControllerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(CourseRestControllerTest.class);
+
 
     @Autowired
     private MockMvc mockMvc;
