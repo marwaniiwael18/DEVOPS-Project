@@ -279,4 +279,37 @@ class InstructorServicesImplTest {
         verify(courseRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }
+    @Test
+    void testDeleteInstructor() {
+        Long instructorId = 1L;
+
+        // Simuler que l'instructeur existe avant la suppression
+        when(instructorRepository.existsById(instructorId)).thenReturn(true);
+        doNothing().when(instructorRepository).deleteById(instructorId);
+
+        instructorService.deleteInstructor(instructorId);
+
+        // Vérifier que `existsById` a bien été appelé
+        verify(instructorRepository, times(1)).existsById(instructorId);
+        // Vérifier que `deleteById` a bien été appelé
+        verify(instructorRepository, times(1)).deleteById(instructorId);
+    }
+
+    @Test
+    void testRetrieveInstructorThrowsException() {
+        when(instructorRepository.findById(anyLong())).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class, () -> instructorService.retrieveInstructor(1L));
+
+        verify(instructorRepository, times(1)).findById(1L);
+    }
+    @Test
+    void testDeleteInstructorNotFound() {
+        Long instructorId = 99L;
+        when(instructorRepository.existsById(instructorId)).thenReturn(false);
+        instructorService.deleteInstructor(instructorId);
+        verify(instructorRepository, times(1)).existsById(instructorId);
+        verify(instructorRepository, never()).deleteById(anyLong());
+
+    }
 }

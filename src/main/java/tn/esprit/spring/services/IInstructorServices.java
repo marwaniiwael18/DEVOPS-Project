@@ -17,5 +17,7 @@ public interface IInstructorServices {
     Instructor retrieveInstructor(Long numInstructor);
 
     Instructor addInstructorAndAssignToCourse(Instructor instructor, Long numCourse);
+    void deleteInstructor(Long numInstructor); // Ajout de la méthode de suppression
+
 
 }

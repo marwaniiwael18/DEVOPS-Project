@@ -43,7 +43,7 @@ pipeline {
         stage('Unit Test') {
             steps {
                 script {
-                    sh 'mvn test jacoco:report'  // Exécuter les tests unitaires
+                    sh 'mvn test jacoco:report -Dspring.profiles.active=test'  // Exécuter les tests unitaires
                 }
             }
         }

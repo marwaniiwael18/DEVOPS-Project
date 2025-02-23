@@ -125,4 +125,33 @@ class CourseServicesImplTest {
         verify(courseRepository, times(1)).findById(99L);
         verify(courseRepository, never()).save(any(Course.class));
     }
+    @Test
+    void testDeleteCourseSuccess() {
+        // ARRANGE
+        Long courseId = 1L;
+        when(courseRepository.existsById(courseId)).thenReturn(true);
+        doNothing().when(courseRepository).deleteById(courseId);
+
+        // ACT
+        courseService.deleteCourse(courseId);
+
+        // ASSERT
+        verify(courseRepository, times(1)).existsById(courseId);
+        verify(courseRepository, times(1)).deleteById(courseId);
+    }
+
+    @Test
+    void testDeleteCourseNotFound() {
+        // ARRANGE
+        Long courseId = 99L;
+        when(courseRepository.existsById(courseId)).thenReturn(false);
+
+        // ACT
+        courseService.deleteCourse(courseId);
+
+        // ASSERT
+        verify(courseRepository, times(1)).existsById(courseId);
+        verify(courseRepository, never()).deleteById(anyLong());
+    }
+
 }

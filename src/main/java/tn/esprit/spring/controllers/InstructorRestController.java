@@ -51,5 +51,12 @@ public class InstructorRestController {
         }
         return ResponseEntity.ok(instructor);
     }
+    @Operation(description = "Delete Instructor by Id")
+    @DeleteMapping("/delete/{id-instructor}")
+    public ResponseEntity<Void> deleteInstructor(@PathVariable("id-instructor") Long numInstructor) {
+        instructorServices.deleteInstructor(numInstructor);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

@@ -54,6 +54,28 @@ public class CourseServicesImpl implements ICourseServices {
     @Override
     public Course retrieveCourse(Long numCourse) {
         logger.info("Retrieving course with ID: {}", numCourse);
-        return courseRepository.findById(numCourse).orElse(null);
+
+        return courseRepository.findById(numCourse)
+                .map(course -> {
+                    logger.info("Course retrieved successfully: {}", course);
+                    return course;
+                })
+                .orElseGet(() -> {
+                    logger.warn("Course with ID {} not found", numCourse);
+                    return null;
+                });
     }
+
+    @Override
+    public void deleteCourse(Long numCourse) {
+        logger.info("Attempting to delete course with ID: {}", numCourse);
+
+        if (courseRepository.existsById(numCourse)) {
+            courseRepository.deleteById(numCourse);
+            logger.info("Course with ID {} deleted successfully", numCourse);
+        } else {
+            logger.warn("Course with ID {} not found, deletion failed", numCourse);
+        }
+    }
+
 }

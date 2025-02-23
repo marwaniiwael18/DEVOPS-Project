@@ -70,6 +70,20 @@ public class CourseRestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+    @Operation(description = "Delete Course by ID")
+    @DeleteMapping("/delete/{id-course}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable("id-course") Long numCourse) {
+        logger.info("Request received to delete course with ID: {}", numCourse);
+
+        if (courseServices.retrieveCourse(numCourse) != null) {
+            courseServices.deleteCourse(numCourse);
+            logger.info("Successfully deleted course with ID: {}", numCourse);
+            return ResponseEntity.ok().build();
+        } else {
+            logger.warn("Course with ID {} not found", numCourse);
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
