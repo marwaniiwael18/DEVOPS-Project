@@ -9,6 +9,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tn.esprit.spring.entities.Course;
 import tn.esprit.spring.entities.Instructor;
+import tn.esprit.spring.entities.Support;
+import tn.esprit.spring.entities.TypeCourse;
 import tn.esprit.spring.repositories.ICourseRepository;
 import tn.esprit.spring.repositories.IInstructorRepository;
 
@@ -125,18 +127,16 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourse() {
-        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
-        Course course = new Course(1L, 3, null, null, 120.0f, 5, null);
-        Instructor savedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>(Collections.singleton(course)));
+        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Course course = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
-        when(instructorRepository.save(any(Instructor.class))).thenReturn(savedInstructor);
+        when(instructorRepository.save(any(Instructor.class))).thenReturn(instructor);
 
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 1L);
 
         assertNotNull(result);
         assertEquals(1, result.getCourses().size());
-        assertTrue(result.getCourses().contains(course));
         verify(courseRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }

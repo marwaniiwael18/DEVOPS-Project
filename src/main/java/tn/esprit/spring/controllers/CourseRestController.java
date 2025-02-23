@@ -14,7 +14,7 @@ import tn.esprit.spring.services.ICourseServices;
 import javax.validation.Valid;
 import java.util.List;
 
-@Tag(name = "\uD83D\uDCDA Course Management")
+@Tag(name = "📚 Course Management")
 @RestController
 @RequestMapping("/course")
 @RequiredArgsConstructor
@@ -26,68 +26,70 @@ public class CourseRestController {
     @Operation(description = "Add Course")
     @PostMapping("/add")
     public ResponseEntity<Course> addCourse(@Valid @RequestBody Course course) {
-        logger.info("Attempting to add a new course: {}", course);
+        logger.info("📌 [ADD] Request to add a new course: {}", course);
         Course savedCourse = courseServices.addCourse(course);
-        logger.info("Successfully added course: {}", savedCourse);
+        logger.info("✅ Course successfully added: {}", savedCourse);
         return ResponseEntity.ok(savedCourse);
     }
 
     @Operation(description = "Retrieve all Courses")
     @GetMapping("/all")
-    public List<Course> getAllCourses() {
-        logger.info("Retrieving all courses");
+    public ResponseEntity<List<Course>> getAllCourses() {
+        logger.info("📌 [GET ALL] Retrieving all courses...");
         List<Course> courses = courseServices.retrieveAllCourses();
-        logger.info("Found {} courses", courses.size());
-        return courses;
+        logger.info("✅ Total courses found: {}", courses.size());
+        return ResponseEntity.ok(courses);
     }
 
     @Operation(description = "Update Course")
     @PutMapping("/update")
     public ResponseEntity<Course> updateCourse(@Valid @RequestBody Course course) {
-        logger.info("Attempting to update course: {}", course);
+        logger.info("📌 [UPDATE] Request to update course: {}", course);
         Course updatedCourse = courseServices.updateCourse(course);
         if (updatedCourse == null) {
-            logger.warn("Course not found for update: {}", course);
+            logger.warn("⚠️ Course not found for update: {}", course);
             return ResponseEntity.notFound().build();
         }
-        logger.info("Successfully updated course: {}", updatedCourse);
+        logger.info("✅ Course successfully updated: {}", updatedCourse);
         return ResponseEntity.ok(updatedCourse);
     }
 
-    @GetMapping("/get/{id-course}")
-    public ResponseEntity<Course> getById(@PathVariable("id-course") String numCourse) {
-        logger.info("Retrieving course with ID: {}", numCourse);
+    @GetMapping("/get/{id}")
+    public ResponseEntity<Course> getById(@PathVariable("id") String numCourse) {
+        logger.info("📌 [GET BY ID] Retrieving course with ID: {}", numCourse);
         try {
             Long id = Long.parseLong(numCourse);
             Course course = courseServices.retrieveCourse(id);
             if (course == null) {
-                logger.warn("Course not found with ID: {}", numCourse);
+                logger.warn("⚠️ Course not found with ID: {}", numCourse);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
+            logger.info("✅ Course retrieved successfully: {}", course);
             return ResponseEntity.ok(course);
         } catch (NumberFormatException e) {
-            logger.error("Invalid course ID format: {}", numCourse, e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            logger.error("❌ Invalid course ID format: {}", numCourse, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
     @Operation(description = "Delete Course by ID")
-    @DeleteMapping("/delete/{id-course}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable("id-course") Long numCourse) {
-        logger.info("Request received to delete course with ID: {}", numCourse);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable("id") Long numCourse) {
+        logger.info("📌 [DELETE] Request received to delete course with ID: {}", numCourse);
 
         if (courseServices.retrieveCourse(numCourse) != null) {
             courseServices.deleteCourse(numCourse);
-            logger.info("Successfully deleted course with ID: {}", numCourse);
-            return ResponseEntity.ok().build();
+            logger.info("✅ Course successfully deleted with ID: {}", numCourse);
+            return ResponseEntity.noContent().build();
         } else {
-            logger.warn("Course with ID {} not found", numCourse);
+            logger.warn("⚠️ Course with ID {} not found", numCourse);
             return ResponseEntity.notFound().build();
         }
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        logger.error("Internal server error occurred", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleAllExceptions(Exception ex) {
+        logger.error("❌ Internal server error", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
     }
 }

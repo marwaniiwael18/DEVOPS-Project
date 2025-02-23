@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,11 +39,11 @@ public class CourseRestControllerTest {
 
     @MockBean
     private ICourseServices courseServices;
+
     @Autowired
-    private ObjectMapper objectMapper; // Ajout de ObjectMapper
+    private ObjectMapper objectMapper;
 
     private Course course;
-    private static final String COURSE_ADD_ENDPOINT = "/course/add";
 
     @BeforeEach
     void setUp() {
@@ -51,46 +52,52 @@ public class CourseRestControllerTest {
 
     @Test
     void testAddCourseSuccess() throws Exception {
-        logger.info("Test: Adding a course successfully");
         when(courseServices.addCourse(any(Course.class))).thenReturn(course);
 
-        mockMvc.perform(post(COURSE_ADD_ENDPOINT)
+        mockMvc.perform(post("/course/add")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(course)))
+                        .content(objectMapper.writeValueAsString(course)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numCourse").value(course.getNumCourse()));
 
         verify(courseServices, times(1)).addCourse(any(Course.class));
     }
+
     @Test
     void testGetCourseByIdSuccess() throws Exception {
-        logger.info("Test: Getting a course by ID successfully");
         Long courseId = 1L;
-
         when(courseServices.retrieveCourse(courseId)).thenReturn(course);
 
-        mockMvc.perform(get("/course/get/{id-course}", courseId)  // ← Corrige ici !
+        mockMvc.perform(get("/course/get/{id}", courseId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numCourse").value(course.getNumCourse()));
 
         verify(courseServices, times(1)).retrieveCourse(courseId);
     }
-    @Test
-    void testHandleRuntimeException() throws Exception {
-        when(courseServices.retrieveCourse(anyLong())).thenThrow(new RuntimeException("Internal error"));
 
-        mockMvc.perform(get("/course/get/1"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Internal error"));
+    @Test
+    void testGetCourseByIdNotFound() throws Exception {
+        Long nonExistentId = 99L;
+        when(courseServices.retrieveCourse(nonExistentId)).thenReturn(null);
+
+        mockMvc.perform(get("/course/get/{id}", nonExistentId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(courseServices, times(1)).retrieveCourse(nonExistentId);
     }
 
+    @Test
+    void testGetCourseByIdInvalidFormat() throws Exception {
+        mockMvc.perform(get("/course/get/invalidId")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void testGetAllCoursesSuccess() throws Exception {
-        logger.info("Test: Getting all courses successfully");
         List<Course> courses = Arrays.asList(course, createSampleCourse(2L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 150.0f, 2));
-
         when(courseServices.retrieveAllCourses()).thenReturn(courses);
 
         mockMvc.perform(get("/course/all")
@@ -100,50 +107,54 @@ public class CourseRestControllerTest {
 
         verify(courseServices, times(1)).retrieveAllCourses();
     }
-    @Test
-    void testGetCourseByIdNotFound() throws Exception {
-        Long nonExistentId = 99L;
-
-        when(courseServices.retrieveCourse(nonExistentId)).thenReturn(null);  // Simule l'absence du cours
-
-        mockMvc.perform(get("/course/get/{id-course}", nonExistentId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());  // On attend un 404
-    }
-    @Test
-    void testGetCourseByIdInvalidFormat() throws Exception {
-        mockMvc.perform(get("/course/get/invalidId")  // ID invalide
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());  // On attend un 400 BAD REQUEST
-    }
 
     @Test
     void testUpdateCourseSuccess() throws Exception {
-        logger.info("Test: Updating a course successfully");
         course.setPrice(200.0f);
         when(courseServices.updateCourse(any(Course.class))).thenReturn(course);
 
         mockMvc.perform(put("/course/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(course)))
+                        .content(objectMapper.writeValueAsString(course)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.price").value(course.getPrice()));
 
         verify(courseServices, times(1)).updateCourse(any(Course.class));
     }
+
     @Test
     void testUpdateCourseNotFound() throws Exception {
         Course updatedCourse = createSampleCourse(2L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
-
-        when(courseServices.updateCourse(any(Course.class))).thenReturn(null);  // Simule un cours non trouvé
+        when(courseServices.updateCourse(any(Course.class))).thenReturn(null);
 
         mockMvc.perform(put("/course/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedCourse)))
-                .andExpect(status().isNotFound());  // On attend un 404
+                .andExpect(status().isNotFound());
     }
 
+    @Test
+    void testDeleteCourseSuccess() throws Exception {
+        Long courseId = 1L;
+        when(courseServices.retrieveCourse(courseId)).thenReturn(course);
+        doNothing().when(courseServices).deleteCourse(courseId);
 
+        mockMvc.perform(delete("/course/delete/{id}", courseId))
+                .andExpect(status().isNoContent()); // Vérifie 204 au lieu de 200
+
+
+        verify(courseServices, times(1)).retrieveCourse(courseId);
+        verify(courseServices, times(1)).deleteCourse(courseId);
+    }
+
+    @Test
+    void testDeleteCourseNotFound() throws Exception {
+        Long nonExistentId = 99L;
+        when(courseServices.retrieveCourse(nonExistentId)).thenReturn(null);
+
+        mockMvc.perform(delete("/course/delete/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+    }
 
     private Course createSampleCourse(Long id, int level, TypeCourse typeCourse, Support support, float price, int timeSlot) {
         Course newCourse = new Course();

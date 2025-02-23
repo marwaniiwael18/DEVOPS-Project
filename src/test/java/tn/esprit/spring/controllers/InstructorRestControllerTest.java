@@ -171,6 +171,36 @@ public class InstructorRestControllerTest {
                         .content(objectMapper.writeValueAsString(invalidInstructor)))
                 .andExpect(status().isBadRequest());  // Validation échouée
     }
+    @Test
+    void testDeleteInstructorSuccess() throws Exception {
+        Long instructorId = 1L;
+        doNothing().when(instructorServices).deleteInstructor(instructorId);
+
+        mockMvc.perform(delete("/instructor/delete/{id-instructor}", instructorId))
+                .andExpect(status().isNoContent());  // Vérifie que la suppression est bien faite
+
+        verify(instructorServices, times(1)).deleteInstructor(instructorId);
+    }
+    @Test
+    void testDeleteInstructorNotFound() throws Exception {
+        Long nonExistentId = 99L;
+        doNothing().when(instructorServices).deleteInstructor(nonExistentId);
+
+        mockMvc.perform(delete("/instructor/delete/{id-instructor}", nonExistentId))
+                .andExpect(status().isNoContent());  // Même si l'élément n'existe pas, la suppression est "réussie"
+
+        verify(instructorServices, times(1)).deleteInstructor(nonExistentId);
+    }
+    @Test
+    void testAddInstructorMissingLastName() throws Exception {
+        Instructor invalidInstructor = new Instructor();
+        invalidInstructor.setFirstName("John");  // LastName est manquant
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidInstructor)))
+                .andExpect(status().isBadRequest());  // Vérifie que la validation échoue
+    }
 
 
 

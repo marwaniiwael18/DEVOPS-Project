@@ -35,32 +35,27 @@ class CourseServicesImplTest {
 
     @Test
     void testRetrieveAllCourses() {
-        // ARRANGE
-        when(courseRepository.findAll()).thenReturn(Arrays.asList(new Course(), new Course()));
+        when(courseRepository.findAll()).thenReturn(Arrays.asList(new Course(1L, 2, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5)));
 
-        // ACT
         List<Course> retrievedCourses = courseService.retrieveAllCourses();
 
-        // ASSERT
         assertNotNull(retrievedCourses);
-        assertEquals(2, retrievedCourses.size());
+        assertEquals(1, retrievedCourses.size());
         verify(courseRepository, times(1)).findAll();
     }
 
     @Test
     void testRetrieveCourseFound() {
-        // ARRANGE
-        Course course = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5, null);
+        Course course = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
-        // ACT
         Course retrievedCourse = courseService.retrieveCourse(1L);
 
-        // ASSERT
         assertNotNull(retrievedCourse);
         assertEquals(1L, retrievedCourse.getNumCourse());
         verify(courseRepository, times(1)).findById(1L);
     }
+
 
     @Test
     void testRetrieveCourseNotFound() {
