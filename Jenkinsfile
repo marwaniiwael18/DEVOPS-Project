@@ -17,12 +17,39 @@ pipeline {
             steps {
                 sh 'mvn clean install'
             }
+            post {
+                success {
+                    echo "Maven build successful!"
+                }
+                failure {
+                    echo "Maven build failed!"
+                }
+            }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=your_project_key -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONARQUBE_TOKEN}"
+                    try {
+                        sh """
+                            echo "Running SonarQube analysis..."
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=your_project_key \
+                            -Dsonar.host.url=${SONARQUBE_SERVER} \
+                            -Dsonar.login=${SONARQUBE_TOKEN}
+                        """
+                    } catch (Exception e) {
+                        echo "SonarQube analysis failed: ${e}"
+                        throw e  // Re-throw the exception to mark the stage as failed
+                    }
+                }
+            }
+            post {
+                success {
+                    echo "SonarQube analysis successful!"
+                }
+                failure {
+                    echo "SonarQube analysis failed!"
                 }
             }
         }
