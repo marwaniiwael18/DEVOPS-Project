@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {
+        SONARQUBE_SERVER = 'http://192.168.73.128:9000'  // SonarQube URL
+        SONARQUBE_TOKEN = credentials('sonar-api')  // SonarQube token
         DOCKER_HUB_CREDENTIAL = credentials('docker')
-        DOCKER_IMAGE_NAME = "springApp"  // Docker image name
-        DOCKER_TAG = "latest"  // Docker image tag
+        DOCKER_IMAGE_NAME = "springApp"
+        DOCKER_TAG = "latest"
     }
 
     stages {
@@ -17,6 +19,14 @@ pipeline {
         stage('Maven Build') {
             steps {
                 sh 'mvn clean install'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    sh "mvn sonar:sonar -Dsonar.projectKey=your_project_key -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONARQUBE_TOKEN}"
+                }
             }
         }
 
