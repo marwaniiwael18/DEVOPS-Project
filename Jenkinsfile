@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube'
+        SONARQUBE_SERVER = 'SonarQube' // Nom configuré dans Jenkins
+        NEXUS_URL = "http://nexus:8081/repository/maven-releases11/"
+        NEXUS_CREDENTIALS = "nexus"
     }
 
     stages {
@@ -14,13 +16,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean compile -Dmaven.repo.local=/var/jenkins_home/.m2/repository'
+                sh 'mvn clean compile'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'mvn test -Dmaven.repo.local=/var/jenkins_home/.m2/repository'
+                sh 'mvn test'
             }
         }
 
@@ -40,6 +42,37 @@ pipeline {
                         """
                     }
                 }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    script {
+                        waitForQualityGate abortPipeline: true
+                    }
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                sh """
+                    mvn deploy -DskipTests \
+                    -s /var/jenkins_home/.m2/settings.xml
+                """
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
