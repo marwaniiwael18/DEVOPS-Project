@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube'  // Nom configuré dans Jenkins
+        SONARQUBE_SERVER = 'SonarQube'
     }
 
     stages {
@@ -14,13 +14,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean compile -Dmaven.repo.local=/var/jenkins_home/.m2/repository'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -Dmaven.repo.local=/var/jenkins_home/.m2/repository'
             }
         }
 
