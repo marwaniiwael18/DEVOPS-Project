@@ -3,6 +3,8 @@ package tn.esprit.spring.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.Subscription;
 import tn.esprit.spring.entities.TypeSubscription;
@@ -27,10 +29,15 @@ public class SubscriptionRestController {
     }
     @Operation(description = "Retrieve Subscription by Id")
     @GetMapping("/get/{id-subscription}")
-    public Subscription getById(@PathVariable("id-subscription") Long numSubscription){
-        return subscriptionServices.retrieveSubscriptionById(numSubscription);
+    public ResponseEntity<Subscription> getById(@PathVariable("id-subscription") Long numSubscription) {
+        Subscription subscription = subscriptionServices.retrieveSubscriptionById(numSubscription);
+
+        if (subscription == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Return 404
+        }
+
+        return ResponseEntity.ok(subscription); // Return 200 with the subscription
     }
-    
     @Operation(description = "Retrieve Subscriptions by Type")
     @GetMapping("/all/{typeSub}")
     public Set<Subscription> getSubscriptionsByType(@PathVariable("typeSub")TypeSubscription typeSubscription){
