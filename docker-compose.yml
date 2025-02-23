@@ -1,6 +1,12 @@
 version: '3.8'
 
 services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
   mysql_db2:
     image: mysql:8.0
     container_name: mysql_db2
