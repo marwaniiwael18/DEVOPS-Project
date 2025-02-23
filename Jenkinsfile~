@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'http://192.168.73.128:9000'  // SonarQube server URL
-        SONARQUBE_TOKEN = credentials('sonar-api')  // SonarQube API token (configured in Jenkins)
-        SONAR_PROJECT_KEY = 'tn.esprit' // Replace with your project key in SonarQube
+        SONARQUBE_SERVER = 'http://192.168.73.128:9000'  // SonarQube URL
+        SONARQUBE_TOKEN = credentials('sonar-api')  // SonarQube token
+        DOCKER_HUB_CREDENTIAL = credentials('docker')
+        DOCKER_IMAGE_NAME = "springApp"
+        DOCKER_TAG = "latest"
     }
 
     stages {
@@ -23,27 +25,37 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube analysis after Maven build
-                    sh "mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONARQUBE_TOKEN}"
+                    sh "mvn sonar:sonar -Dsonar.projectKey=your_project_key -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONARQUBE_TOKEN}"
                 }
             }
         }
 
-        stage('Unit Tests') {
+        stage('Build Docker Image') {
             steps {
-                // Run unit tests using Maven (JUnit tests)
-                sh 'mvn test'
-                junit 'target/surefire-reports/*.xml'  // Publish test results
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_HUB_CREDENTIAL_USR', passwordVariable: 'DOCKER_HUB_CREDENTIAL_PSW')]) {
+                    sh """
+                        docker build -t ${DOCKER_HUB_CREDENTIAL_USR}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_HUB_CREDENTIAL_USR', passwordVariable: 'DOCKER_HUB_CREDENTIAL_PSW')]) {
+                    sh "echo ${DOCKER_HUB_CREDENTIAL_PSW} | docker login -u ${DOCKER_HUB_CREDENTIAL_USR} --password-stdin"
+                    sh "docker push ${DOCKER_HUB_CREDENTIAL_USR}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Build and SonarQube analysis successful!"
+            echo "Build and Docker image push successful!"
         }
         failure {
-            echo "Build or SonarQube analysis failed!"
+            echo "Build or Docker image push failed!"
         }
     }
 }
