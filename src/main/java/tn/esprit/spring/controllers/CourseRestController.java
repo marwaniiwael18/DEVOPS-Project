@@ -87,9 +87,4 @@ public class CourseRestController {
         }
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllExceptions(Exception ex) {
-        logger.error("❌ Internal server error", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-    }
 }
