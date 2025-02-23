@@ -9,24 +9,21 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: stationSki
       MYSQL_USER: root
-      MYSQL_PASSWORD:
+      MYSQL_PASSWORD: ""
     ports:
       - "3306:3306"
     networks:
       - spring_network
 
-
   spring_app:
     image: 192.168.100.47:8083/aymenjallouli_4twin3_thunder_gestionski:${imageTag}
-  # Utiliser le tag dynamique ici
     container_name: back3
     depends_on:
       - mysql_db2
     environment:
-
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/stationSki?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD:
+      SPRING_DATASOURCE_PASSWORD: ""
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL5InnoDBDialect
@@ -36,7 +33,6 @@ services:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
       LOGGING_LEVEL_TN_ESPRIT_SPRING: DEBUG
       TZ: Africa/Tunis
-
     ports:
       - "8087:8087"
     restart: always
