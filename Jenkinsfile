@@ -47,11 +47,21 @@ pipeline {
                 }
             }
         }
+         stage('Publish JaCoCo Report') {
+                    steps {
+                        jacoco(
+                            execPattern: 'target/jacoco.exec',  // Fichier d'exécution JaCoCo
+                            classPattern: 'target/classes',     // Répertoire des classes compilées
+                            sourcePattern: 'src/main/java',     // Répertoire des sources
+                            exclusionPattern: '**/test/**'      // Exclure les classes de test
+                        )
+                    }
+                }
 
         stage('Create SonarQube Project') {
             steps {
                 script {
-                    // Créez un projet SonarQube via l'API
+
                     sh """
                         curl -u ${SONAR_TOKEN}: -X POST "${SONAR_URL}/api/projects/create" \
                           -d "project=${SONAR_PROJECT_KEY}&name=${SONAR_PROJECT_NAME}"
