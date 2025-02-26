@@ -4,7 +4,6 @@ pipeline {
     environment {
         gitBranch = "Yassine/Skier"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
-
     }
 
     stages {
@@ -32,19 +31,7 @@ pipeline {
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }
 
     post {
         success {
@@ -54,6 +41,4 @@ pipeline {
             echo "❌ Pipeline failed! Check the logs."
         }
     }
-}
-
 }
