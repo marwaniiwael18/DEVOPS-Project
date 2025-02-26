@@ -7,7 +7,8 @@ pipeline {
         NEXUS_CREDENTIALS = "nexus"
     }
 
-    stages {  // 🔹 Move all stages inside this block
+    stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
@@ -20,15 +21,24 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Wait for MySQL') {
             steps {
-                sh 'mvn test -Dtest=AppTest'
+                script {
+                    echo "Waiting for MySQL to start..."
+                    sh 'sleep 20'  // Adjust if needed
+                }
             }
         }
 
-        stage('Archive Test Results') {  // ✅ Moved inside `stages`
+        stage('Run Tests') {
             steps {
-                archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
+                script {
+                    try {
+                        sh 'mvn clean test -Dspring.profiles.active=test'
+                    } finally {
+                        archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
+                    }
+                }
             }
         }
 
