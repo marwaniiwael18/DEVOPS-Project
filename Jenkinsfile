@@ -89,11 +89,11 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') { // ADDED STAGE HERE
+        stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'ls -l'  // Verify if Dockerfile exists
-                    sh "docker build -t $registry/$imageName:$imageTag ."  // Build the Docker image
+                    sh 'ls -l'  // Verify Dockerfile presence
+                    sh "docker build -t nexus:8081/gestion-station-ski:$imageTag ."  // Remove 'http://'
                 }
             }
         }
