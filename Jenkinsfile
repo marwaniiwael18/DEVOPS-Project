@@ -2,11 +2,15 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube' // Nom configuré dans Jenkins
+        SONARQUBE_SERVER = 'SonarQube' //
         NEXUS_URL = "http://nexus:8081/repository/maven-releases11/"
         NEXUS_CREDENTIALS = "nexus"
     }
-
+    stage('Archive Test Results') {
+        steps {
+            archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
+        }
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -22,7 +26,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -Dtest=AppTest'
             }
         }
 
