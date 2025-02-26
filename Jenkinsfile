@@ -2,16 +2,12 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube' //
+        SONARQUBE_SERVER = 'SonarQube'
         NEXUS_URL = "http://nexus:8081/repository/maven-releases11/"
         NEXUS_CREDENTIALS = "nexus"
     }
-    stage('Archive Test Results') {
-        steps {
-            archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
-        }
-    }
-    stages {
+
+    stages {  // 🔹 Move all stages inside this block
         stage('Checkout') {
             steps {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
@@ -27,6 +23,12 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh 'mvn test -Dtest=AppTest'
+            }
+        }
+
+        stage('Archive Test Results') {  // ✅ Moved inside `stages`
+            steps {
+                archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
             }
         }
 
