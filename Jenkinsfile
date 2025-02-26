@@ -28,8 +28,9 @@ pipeline {
                     def attempts = 0
                     while (!ready && attempts < 15) {
                         try {
+                            // Direct MySQL connection from Jenkins container
                             sh '''
-                                docker exec -i jenkins bash -c "mysql -h mysqldb -u root -proot -e 'SELECT 1;'"
+                                mysql -h mysqldb -u root -proot -e 'SELECT 1;'
                             '''
                             ready = true
                             echo "MySQL is ready!"
