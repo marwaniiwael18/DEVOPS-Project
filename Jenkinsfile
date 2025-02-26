@@ -5,7 +5,8 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         NEXUS_URL = "http://nexus:8081/repository/maven-releases11/"
         NEXUS_CREDENTIALS = "nexus"
-        registry = "http://nexus:8081"  // Nexus Repository
+        registryCredentials = "nexus"
+        registry = "http://172.20.0.2:8081"  // Nexus Repository
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
     }
@@ -98,14 +99,15 @@ pipeline {
             }
         }
 
-        stage('Deploy to Nexus') {
-            steps {
-                sh """
-                    mvn deploy -DskipTests \\
-                    -s /var/jenkins_home/.m2/settings.xml
-                """
-            }
-        }
+         stage('Push to Nexus') {
+                   steps {
+                       script {
+                           docker.withRegistry("http://$registry", registryCredentials) {
+                               sh "docker push $registry/$imageName:$imageTag"  // Pousser l'image Docker vers Nexus
+                           }
+                       }
+                   }
+               }
 
         stage('Archive Artifacts') {
             steps {
