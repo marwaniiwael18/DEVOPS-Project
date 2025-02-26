@@ -7,6 +7,7 @@ import tn.esprit.spring.repositories.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -46,9 +47,16 @@ public class SkierServicesImpl implements ISkierServices {
     }
 
     @Override
-    public Skier assignSkierToSubscription(Long numSkier, Long numSubscription) {
-        Skier skier = skierRepository.findById(numSkier).orElse(null);
-        Subscription subscription = subscriptionRepository.findById(numSubscription).orElse(null);
+    public Skier assignSkierToSubscription(Long skierId, Long subscriptionId) {
+        Optional<Skier> skierOpt = skierRepository.findById(skierId);
+        Optional<Subscription> subscriptionOpt = subscriptionRepository.findById(subscriptionId);
+
+        if (skierOpt.isEmpty() || subscriptionOpt.isEmpty()) {
+            return null;
+        }
+
+        Skier skier = skierOpt.get();
+        Subscription subscription = subscriptionOpt.get();
         skier.setSubscription(subscription);
         return skierRepository.save(skier);
     }
@@ -67,8 +75,9 @@ public class SkierServicesImpl implements ISkierServices {
     }
 
     @Override
-    public void removeSkier(Long numSkier) {
+    public boolean removeSkier(Long numSkier) {
         skierRepository.deleteById(numSkier);
+        return false;
     }
 
     @Override

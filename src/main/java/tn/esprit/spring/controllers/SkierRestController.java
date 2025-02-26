@@ -3,6 +3,7 @@ package tn.esprit.spring.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.Skier;
 import tn.esprit.spring.entities.TypeSubscription;
@@ -66,4 +67,24 @@ public class SkierRestController {
         return skierServices.retrieveAllSkiers();
     }
 
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSkier(@PathVariable Long id) {
+        boolean isDeleted = skierServices.removeSkier(id);
+        if (isDeleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Skier> getSkierById(@PathVariable Long id) {
+        Skier skier = skierServices.retrieveSkier(id);
+        if (skier != null) {
+            return ResponseEntity.ok(skier);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

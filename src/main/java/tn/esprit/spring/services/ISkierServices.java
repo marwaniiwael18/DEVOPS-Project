@@ -15,7 +15,7 @@ public interface ISkierServices {
 
 	Skier addSkierAndAssignToCourse(Skier skier, Long numCourse);
 
-	void removeSkier (Long numSkier);
+	boolean removeSkier (Long numSkier);
 
 	Skier retrieveSkier (Long numSkier);
 
