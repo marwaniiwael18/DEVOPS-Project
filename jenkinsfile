@@ -1,11 +1,35 @@
 pipeline {
     agent any
 
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                script {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                script {
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Build application') {
+            steps {
+                script {
+                    // Add your build steps here
+                    sh 'npm run build'
+                }
             }
         }
 
