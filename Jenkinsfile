@@ -25,7 +25,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh 'mvn clean install test jacoco:report -Dspring.profiles.active=test'
+                sh 'mvn clean verify jacoco:report -Dspring.profiles.active=test'
             }
         }
 
@@ -35,24 +35,26 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    def scannerHome = tool 'SonarScan'
-                    withSonarQubeEnv {
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.sources=src \
-                            -Dsonar.java.binaries=target/classes \
-                            -Dsonar.sourceEncoding=UTF-8 \
-                            -Dsonar.login=${SONAR_TOKEN}
-                        """
-                    }
-                }
+       stage('SonarQube Analysis') {
+    steps {
+        script {
+            def scannerHome = tool 'SonarScan'
+            withSonarQubeEnv {
+                sh """
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                    -Dsonar.sources=src \
+                    -Dsonar.java.binaries=target/classes \
+                    -Dsonar.sourceEncoding=UTF-8 \
+                    -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
+                    -Dsonar.login=${SONAR_TOKEN}
+                """
             }
         }
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
