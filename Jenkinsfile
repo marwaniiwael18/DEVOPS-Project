@@ -48,7 +48,7 @@ pipeline {
                     -Dsonar.java.binaries=target/classes \
                     -Dsonar.sourceEncoding=UTF-8 \
                     -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
-                    -Dsonar.login=${SONAR_TOKEN}
+                    -Dsonar.login=\"${SONAR_TOKEN}\"
                 """
             }
         }
