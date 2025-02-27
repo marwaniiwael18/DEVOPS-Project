@@ -12,8 +12,8 @@ pipeline {
         // SonarQube
         SONAR_URL = "http://sonar:9000"
         SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"
-        SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"
-        SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"
+        SONAR_PROJECT_KEY = "AymenJallouli_4twin3_thunder_gestionski"
+        SONAR_PROJECT_NAME = "AymenJallouli_4twin3_thunder_gestionski"
     }
 
     stages {
