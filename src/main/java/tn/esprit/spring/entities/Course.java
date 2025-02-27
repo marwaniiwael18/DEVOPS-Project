@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level=AccessLevel.PRIVATE)
 @Entity
+@Table(name = "course")
 public class Course implements Serializable {
 
 	@Id
