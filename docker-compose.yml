@@ -8,8 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: stationSki
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root  # Ajout d'un mot de passe explicite
+        
     ports:
       - "3307:3306"
     networks:
