@@ -11,7 +11,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: root  # Ajout d'un mot de passe explicite
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - spring_network
     healthcheck:
