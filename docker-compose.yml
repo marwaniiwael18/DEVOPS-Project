@@ -9,29 +9,31 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: stationSki
       MYSQL_USER: root
-      MYSQL_PASSWORD: ""
+      MYSQL_PASSWORD: root  # Ajout d'un mot de passe explicite
     ports:
       - "3306:3306"
     networks:
       - spring_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
 
   spring_app:
-    image: 192.168.100.47:8083/aymenjallouli_4twin3_thunder_gestionski:${imageTag}
+    image: nexus:8083/aymenjallouli_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
     container_name: back3
     depends_on:
-      - mysql_db2
+      mysql_db2:
+        condition: service_healthy  # Attend que MySQL soit prêt
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL5InnoDBDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
       SPRING_JPA_OPEN_IN_VIEW: "false"
-      LOGGING_LEVEL_ROOT: info
-      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
-      LOGGING_LEVEL_TN_ESPRIT_SPRING: DEBUG
       TZ: Africa/Tunis
     ports:
       - "8087:8087"
