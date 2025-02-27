@@ -1,78 +1,63 @@
 pipeline {
     agent any
 
+    environment {
+        gitBranch = "Kenza/TaskPist"
+        gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
+    }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile'
-            }
-        }
-
-        stage('Wait for MySQL') {
+        stage('Checkout Code') {
             steps {
                 script {
-                    echo "Checking MySQL connection..."
-                    def ready = false
-                    def attempts = 0
-                    while (!ready && attempts < 15) {
-                        try {
-                            sh '''
-                                mysql -h mysqldb -u root -proot -e 'SELECT 1;'
-                            '''
-                            ready = true
-                            echo "MySQL is ready!"
-                        } catch (exc) {
-                            attempts++
-                            echo "MySQL not ready yet (attempt ${attempts}/15), waiting..."
-                            sh 'sleep 5'
-                        }
-                    }
-                    if (!ready) {
-                        error "MySQL did not become available in time"
-                    }
+                    git branch: gitBranch, url: gitRepo
+                    sh 'ls -l'
                 }
             }
         }
 
-        stage('Run Tests') {
+        stage('Install Dependencies') {
             steps {
                 script {
-                    try {
-                        sh 'mvn clean test -Dspring.profiles.active=test'
-                    } catch (Exception e) {
-                        echo "Tests failed, but continuing pipeline"
-                        currentBuild.result = 'UNSTABLE'
-                    } finally {
-                        archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
-                    }
+                    sh 'mvn clean install'
                 }
             }
         }
 
-        stage('Package') {
+        stage('Check Maven Version') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                script {
+                    // Verify that Maven is installed correctly
+                    sh 'mvn -v'
+                }
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                script {
+                    // Run unit tests and generate the JaCoCo report
+                    sh 'mvn test jacoco:report -Dspring.profiles.active=test'
+                }
+            }
+        }
+
+        stage('Run Application') {
+            steps {
+                script {
+                    // You can run your application here
+                    sh 'mvn spring-boot:run'
+                }
             }
         }
     }
 
     post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            cleanWs()
-        }
         success {
-            echo 'Build successful!'
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo 'Build failed!'
+            echo "❌ Pipeline failed! Check the logs."
         }
     }
 }
