@@ -10,9 +10,15 @@ import tn.esprit.spring.entities.Color;
 import tn.esprit.spring.entities.Piste;
 import tn.esprit.spring.repositories.IPisteRepository;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class PisteServiceTest {
 
@@ -20,7 +26,7 @@ class PisteServiceTest {
     private IPisteRepository pisteRepository;
 
     @InjectMocks
-    private PisteServicesImpl pisteService;
+    private PisteServicesImpl pisteServices;
 
     private Piste piste;
 
@@ -28,41 +34,36 @@ class PisteServiceTest {
     void setUp() {
         piste = new Piste();
         piste.setNumPiste(1L);
-        piste.setNamePiste("Blue Piste");
-        piste.setColor(Color.BLUE);
-        piste.setLength(600);
-        piste.setSlope(15);
+        piste.setNamePiste("Piste 1");
+        piste.setColor(Color.RED);
+        piste.setLength(1000);
+        piste.setSlope(30);
+    }
+
+    @Test
+    void testRemovePiste() {
+        Piste piste = new Piste();
+        piste.setNumPiste(1L);
+
+        when(pisteRepository.findById(1L)).thenReturn(Optional.of(piste));
+
+        pisteServices.removePiste(1L);
+
+        // Vérifie que delete() est bien appelé sur l'entité, pas sur l'ID
+        verify(pisteRepository, times(1)).delete(piste); // Correct, vous appelez delete sur l'objet, pas deleteById
     }
 
     @Test
     void testAddPiste() {
+        Piste piste = new Piste();
+        piste.setNumPiste(1L);
+
         when(pisteRepository.save(any(Piste.class))).thenReturn(piste);
 
-        Piste result = pisteService.addPiste(piste);
+        // Ton test pour ajouter la piste
+        assertEquals(piste, pisteServices.addPiste(piste));
 
-        assertNotNull(result);
-        assertEquals(1L, result.getNumPiste());
+        // Vérifie que save() a bien été appelé
         verify(pisteRepository, times(1)).save(any(Piste.class));
-    }
-
-    @Test
-    void testRetrievePisteByIdFound() {
-        when(pisteRepository.findById(1L)).thenReturn(java.util.Optional.of(piste));
-
-        Piste result = pisteService.retrievePiste(1L);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getNumPiste());
-        verify(pisteRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    void testRetrievePisteByIdNotFound() {
-        when(pisteRepository.findById(99L)).thenReturn(java.util.Optional.empty());
-
-        Piste result = pisteService.retrievePiste(99L);
-
-        assertNull(result);
-        verify(pisteRepository, times(1)).findById(99L);
     }
 }

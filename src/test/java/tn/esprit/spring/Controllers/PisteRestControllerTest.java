@@ -42,15 +42,16 @@ public class PisteRestControllerTest {
 
     private static final String PISTE_ADD_ENDPOINT = "/piste/add";
     private static final String PISTE_GET_ENDPOINT = "/piste/get/{id-piste}";
+    private static final String PISTE_DELETE_ENDPOINT = "/piste/delete/{id-piste}";
 
     @BeforeEach
     void setUp() {
         piste = new Piste();
         piste.setNumPiste(1L);
-        piste.setNamePiste("Green Piste");
-        piste.setColor(Color.GREEN);
-        piste.setLength(500);
-        piste.setSlope(10);
+        piste.setNamePiste("Piste 1");
+        piste.setColor(Color.RED);
+        piste.setLength(1000);
+        piste.setSlope(30);
     }
 
     @Test
@@ -70,10 +71,40 @@ public class PisteRestControllerTest {
     void testGetPisteByIdSuccess() throws Exception {
         when(pisteServices.retrievePiste(1L)).thenReturn(piste);
 
-        mockMvc.perform(get(PISTE_GET_ENDPOINT, 1))
+        mockMvc.perform(get(PISTE_GET_ENDPOINT, 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numPiste").value(1L));
 
         verify(pisteServices, times(1)).retrievePiste(1L);
     }
+
+    @Test
+    void testGetPisteByIdNotFound() throws Exception {
+        when(pisteServices.retrievePiste(99L)).thenReturn(null);
+
+        mockMvc.perform(get(PISTE_GET_ENDPOINT, 99L))
+                .andExpect(status().isNotFound());
+
+        verify(pisteServices, times(1)).retrievePiste(99L);
+    }
+
+    @Test
+    void testDeletePisteByIdSuccess() throws Exception {
+        when(pisteServices.retrievePiste(1L)).thenReturn(piste);
+        doNothing().when(pisteServices).removePiste(1L);
+
+        mockMvc.perform(delete(PISTE_DELETE_ENDPOINT, 1L))
+                .andExpect(status().isNoContent());
+        verify(pisteServices, times(1)).removePiste(1L);
+    }
+
+
+    @Test
+    void testDeletePisteByIdNotFound() throws Exception {
+        when(pisteServices.retrievePiste(99L)).thenReturn(null);
+        mockMvc.perform(delete(PISTE_DELETE_ENDPOINT, 99L))
+                .andExpect(status().isNotFound());
+        verify(pisteServices, never()).removePiste(99L);
+    }
+
 }
