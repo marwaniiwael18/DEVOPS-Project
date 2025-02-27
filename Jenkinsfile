@@ -3,7 +3,7 @@ pipeline {
 
 environment {
     registryCredentials = "nexus"
-    registry = "nexus:8083" // Utilisation du nom du conteneur Nexus au lieu de localhost
+    registry = "192.168.100.47:8083" // Utilisation du nom du conteneur Nexus au lieu de localhost
     imageName = "aymenjallouli_4twin3_thunder_gestionski"
     imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
     gitBranch = "Aymenjallouli_4twin3_thunder"
@@ -11,7 +11,7 @@ environment {
 
     // Configuration de SonarQube
     SONAR_HOST = "sonar"  // Nom du conteneur SonarQube
-    SONAR_URL = "http://${SONAR_HOST}:9000"  // URL correcte pour Jenkins
+    SONAR_URL = "http://192.168.100.47:9000"  // URL correcte pour Jenkins
     SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"  // Token SonarQube
     SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"  // Clé du projet SonarQube
     SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"  // Nom du projet SonarQube
