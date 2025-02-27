@@ -39,6 +39,8 @@ pipeline {
         }
         failure {
             echo "❌ Pipeline failed! Check the logs."
+            archiveArtifacts artifacts: 'target/surefire-reports/*.xml', allowEmptyArchive: true
+            junit 'target/surefire-reports/*.xml'
         }
     }
 }
