@@ -59,16 +59,30 @@ pipeline {
                 }
 
         stage('Create SonarQube Project') {
-            steps {
-                script {
+    steps {
+        script {
+            // Vérifier si le projet existe déjà
+            def projectExists = sh(
+                script: """
+                    curl -u ${SONAR_TOKEN}: -s "${SONAR_URL}/api/projects/search?projects=${SONAR_PROJECT_KEY}" | grep '"key":"${SONAR_PROJECT_KEY}"'
+                """,
+                returnStatus: true
+            )
 
-                    sh """
-                        curl -u ${SONAR_TOKEN}: -X POST "${SONAR_URL}/api/projects/create" \
-                          -d "project=${SONAR_PROJECT_KEY}&name=${SONAR_PROJECT_NAME}"
-                    """
-                }
+            // Si le projet n'existe pas (code de retour != 0), on le crée
+            if (projectExists != 0) {
+                echo "Le projet SonarQube ${SONAR_PROJECT_KEY} n'existe pas. Création en cours..."
+                sh """
+                    curl -u ${SONAR_TOKEN}: -X POST "${SONAR_URL}/api/projects/create" \
+                      -d "project=${SONAR_PROJECT_KEY}&name=${SONAR_PROJECT_NAME}"
+                """
+            } else {
+                echo "Le projet SonarQube ${SONAR_PROJECT_KEY} existe déjà. Pas besoin de le créer."
             }
         }
+    }
+}
+
 
         stage('SonarQube Analysis') {
             steps {
