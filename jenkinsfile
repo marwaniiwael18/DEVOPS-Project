@@ -1,8 +1,6 @@
 pipeline {
     agent any
-    environment {
-            PATH = "/usr/local/bin:${env.PATH}"
-        }
+
 
     stages {
         stage('Checkout') {
@@ -10,11 +8,11 @@ pipeline {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
             }
         }
-
         stage('Install dependencies') {
             steps {
                 script {
-                    sh 'npm install'
+                    // Run the Maven build to install dependencies
+                    sh 'mvn clean install'
                 }
             }
         }
@@ -22,7 +20,8 @@ pipeline {
         stage('Unit Test') {
             steps {
                 script {
-                    sh 'npm test'
+                    // Run tests using Maven
+                    sh 'mvn test'
                 }
             }
         }
@@ -30,8 +29,8 @@ pipeline {
         stage('Build application') {
             steps {
                 script {
-                    // Add your build steps here
-                    sh 'npm run build'
+                    // Build the application using Maven
+                    sh 'mvn package -DskipTests'
                 }
             }
         }
