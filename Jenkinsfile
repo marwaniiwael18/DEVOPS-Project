@@ -62,8 +62,10 @@ pipeline {
 
         stage('Push to Nexus') {
             steps {
-                docker.withRegistry("http://$registry", registryCredentials) {
-                    sh "docker push $registry/$imageName:$imageTag"
+                script {
+                    docker.withRegistry("http://$registry", registryCredentials) {
+                        sh "docker push $registry/$imageName:$imageTag"  // Pousser l'image Docker vers Nexus
+                    }
                 }
             }
         }
