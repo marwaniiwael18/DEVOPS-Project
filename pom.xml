@@ -158,26 +158,36 @@
 				<version>3.0.0-M7</version>
 			</plugin>
 
-			<!-- Jacoco Plugin for Test Coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.8</version>
 				<executions>
+					<!-- Activation de l'agent JaCoCo -->
 					<execution>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
+					<!-- Génération du rapport XML (pour SonarQube) et HTML (pour Jenkins) -->
 					<execution>
 						<id>report</id>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<formats>
+								<format>HTML</format> <!-- Rapport HTML pour Jenkins -->
+								<format>XML</format>  <!-- Rapport XML pour SonarQube -->
+							</formats>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+
+
 		</plugins>
 	</build>
 </project>
