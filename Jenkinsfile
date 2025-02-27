@@ -70,13 +70,22 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+         stage('Run Application') {
             steps {
                 script {
-                    sh 'docker-compose down || true' // Arrêter les anciens conteneurs
-                    sh "docker pull $registry/$imageName:$imageTag"
-                    sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
-                    sh "docker-compose up -d"
+                    docker.withRegistry("http://$registry", registryCredentials) {
+                        sh "docker pull $registry/$imageName:$imageTag"
+                        sh "sed -i 's|IMAGE_TAG|${imageTag}|g' docker-compose.yml"
+
+                        // Remplacement dynamique de IMAGE_TAG dans docker-compose.yml
+                        sh "sed -i 's|IMAGE_TAG|$imageTag|g' docker-compose.yml"
+
+                        // Vérifier le fichier après modification
+                        sh "cat docker-compose.yml"
+
+                        // Lancer les services avec Docker Compose
+                        sh "docker-compose up -d"
+                    }
                 }
             }
         }
