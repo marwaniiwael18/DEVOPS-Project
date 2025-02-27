@@ -8,32 +8,6 @@ pipeline {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
             }
         }
-        stage('Install dependencies') {
-            steps {
-                script {
-                    // Run the Maven build to install dependencies
-                    sh 'mvn clean install'
-                }
-            }
-        }
-
-        stage('Unit Test') {
-            steps {
-                script {
-                    // Run tests using Maven
-                    sh 'mvn test'
-                }
-            }
-        }
-
-        stage('Build application') {
-            steps {
-                script {
-                    // Build the application using Maven
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
 
         stage('Build') {
             steps {
