@@ -50,6 +50,12 @@ pipeline {
                 }
             }
         }
+        stage('Publish Test Results') {
+            steps {
+                junit '**/target/surefire-reports/*.xml'  // Indique le chemin des fichiers XML de tests
+            }
+        }
+
     }
 
     post {
