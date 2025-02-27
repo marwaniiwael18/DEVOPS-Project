@@ -3,12 +3,12 @@ pipeline {
 
     environment {
         registryCredentials = "nexus"
-        registry = "192.168.100.47:8083"
+        registry = "localhost:8083"
         imageName = "aymenjallouli_4twin3_thunder_gestionski"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
         gitBranch = "Aymenjallouli_4twin3_thunder"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo
-        SONAR_URL = "http://192.168.100.47:9000"  // URL de SonarQube
+        SONAR_URL = "http://localhost:9000"  // URL de SonarQube
         SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"  // Token SonarQube
         SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"  // Clé du projet SonarQube
         SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"  // Nom du projet SonarQube
