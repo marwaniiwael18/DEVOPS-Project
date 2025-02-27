@@ -35,25 +35,27 @@ pipeline {
             }
         }
 
-       stage('SonarQube Analysis') {
+    stage('SonarQube Analysis') {
     steps {
         script {
             def scannerHome = tool 'SonarScan'
             withSonarQubeEnv {
                 sh """
+                    export SONAR_TOKEN=${SONAR_TOKEN}
                     ${scannerHome}/bin/sonar-scanner \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                     -Dsonar.projectName=${SONAR_PROJECT_NAME} \
                     -Dsonar.sources=src \
                     -Dsonar.java.binaries=target/classes \
                     -Dsonar.sourceEncoding=UTF-8 \
-                    -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
-                    -Dsonar.login=\"${SONAR_TOKEN}\"
+                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                    -Dsonar.login=${SONAR_TOKEN}
                 """
             }
         }
     }
 }
+
 
 
         stage('Build Docker Image') {
