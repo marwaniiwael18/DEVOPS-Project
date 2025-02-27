@@ -1,18 +1,22 @@
 pipeline {
     agent any
 
-    environment {
-        registryCredentials = "nexus"
-        registry = "localhost:8083"
-        imageName = "aymenjallouli_4twin3_thunder_gestionski"
-        imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
-        gitBranch = "Aymenjallouli_4twin3_thunder"
-        gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo
-        SONAR_URL = "http://localhost:9000"  // URL de SonarQube
-        SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"  // Token SonarQube
-        SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"  // Clé du projet SonarQube
-        SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"  // Nom du projet SonarQube
-    }
+environment {
+    registryCredentials = "nexus"
+    registry = "nexus:8083" // Utilisation du nom du conteneur Nexus au lieu de localhost
+    imageName = "aymenjallouli_4twin3_thunder_gestionski"
+    imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}" // Génère un tag unique pour chaque build
+    gitBranch = "Aymenjallouli_4twin3_thunder"
+    gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"  // Ajout de l'URL du repo
+
+    // Configuration de SonarQube
+    SONAR_HOST = "sonar"  // Nom du conteneur SonarQube
+    SONAR_URL = "http://${SONAR_HOST}:9000"  // URL correcte pour Jenkins
+    SONAR_TOKEN = "squ_65d3b090f57666eaa1f74c863a93e4010b788917"  // Token SonarQube
+    SONAR_PROJECT_KEY = "AymenJallouli_Twin3_GestionSki"  // Clé du projet SonarQube
+    SONAR_PROJECT_NAME = "AymenJallouli_Twin3_GestionSki"  // Nom du projet SonarQube
+}
+
 
     stages {
         stage('Checkout Code') {
