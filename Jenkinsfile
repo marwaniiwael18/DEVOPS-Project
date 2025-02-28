@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registryCredentials = "nexus"
-        registry = "172.20.0.2:8081"  // Fix here, no 'http://'
+         registry = "172.20.0.2:8081"
+            registryCredentials = "nexus"
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
     }
@@ -97,7 +97,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("http://${registry}", registryCredentials) {
-                        sh "docker push ${registry}/${imageName}:${imageTag}"  // Fixed image name
+                        sh "docker push ${registry}/$imageName:$imageTag"
                     }
                 }
             }
