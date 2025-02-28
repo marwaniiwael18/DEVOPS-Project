@@ -48,20 +48,16 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    try {
-                        sh 'mvn clean test -Dspring.profiles.active=test'
-                    } catch (Exception e) {
-                        echo "Tests failed, but continuing pipeline"
-                        currentBuild.result = 'UNSTABLE'
-                    } finally {
-                        archiveArtifacts artifacts: 'target/surefire-reports/*', fingerprint: true
-                    }
-                }
-            }
-        }
+      stage('Run Tests') {
+          steps {
+              sh 'mvn clean test'
+          }
+          post {
+              always {
+                  junit '**/target/surefire-reports/*.xml'
+              }
+          }
+      }
 
         stage('SonarQube Analysis') {
             steps {
