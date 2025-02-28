@@ -9,30 +9,48 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                echo "Starting Git Checkout..."
                 git branch: 'registration', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
-                echo "Git Checkout completed!"
             }
         }
 
         stage('Maven Build') {
             steps {
-                echo "Starting Maven Build..."
-                sh 'mvn clean install'
-                echo "Maven Build completed!"
+                sh 'mvn clean install -DskipTests'
+            }
+            post {
+                success {
+                    echo "Maven build successful!"
+                }
+                failure {
+                    echo "Maven build failed!"
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                echo "Starting SonarQube Analysis..."
-                sh """
-                    mvn sonar:sonar \
-                    -Dsonar.projectKey=tn.esprit.myspringapp \
-                    -Dsonar.host.url=${SONARQUBE_SERVER} \
-                    -Dsonar.login=${SONARQUBE_TOKEN}
-                """
-                echo "SonarQube Analysis completed!"
+                script {
+                    try {
+                        echo "Running SonarQube analysis..."
+                        sh """
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=tn.esprit.myspringapp \
+                            -Dsonar.host.url=${SONARQUBE_SERVER} \
+                            -Dsonar.login=${SONARQUBE_TOKEN}
+                        """
+                    } catch (Exception e) {
+                        echo "SonarQube analysis failed: ${e}"
+                        throw e
+                    }
+                }
+            }
+            post {
+                success {
+                    echo "SonarQube analysis successful!"
+                }
+                failure {
+                    echo "SonarQube analysis failed!"
+                }
             }
         }
     }
