@@ -23,7 +23,7 @@
 	<distributionManagement>
 		<repository>
 			<id>nexus</id>
-			<url>http://nexus:8081/repository/maven-releases11/</url>
+			<url>http://localhost:8081/repository/docker-hosted/</url>
 		</repository>
 	</distributionManagement>
 
