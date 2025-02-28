@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "nexus:8082"  // Change to 8082 for Docker registry in Nexus
+        registry = "nexus:8083"  // Change to 8082 for Docker registry in Nexus
         registryCredentials = "nexus"  // Make sure this matches Jenkins credentials
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
