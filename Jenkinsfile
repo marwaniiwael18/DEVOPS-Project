@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-         registry = "172.20.0.2:8081"
+         registry = "nexus:8081"
             registryCredentials = "nexus"
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
@@ -93,15 +93,15 @@ pipeline {
             }
         }
 
-        stage('Push to Nexus') {
-            steps {
-                script {
-                    docker.withRegistry("http://${registry}", registryCredentials) {
-                        sh "docker push ${registry}/$imageName:$imageTag"
-                    }
-                }
-            }
-        }
+       stage('Push to Nexus') {
+           steps {
+               script {
+                   docker.withRegistry('http://nexus:8081', registryCredentials) {
+                       sh "docker push nexus:8081/${imageName}:${imageTag}"
+                   }
+               }
+           }
+       }
 
         stage('Archive Artifacts') {
             steps {
