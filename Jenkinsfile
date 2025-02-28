@@ -93,15 +93,15 @@ pipeline {
             }
         }
 
-        stage('Push to Nexus') {
-            steps {
-                script {
-                    docker.withRegistry("http://${registry}", registryCredentials) {
-                        sh "docker push ${registry}/gestion-station-ski:${imageTag}"
-                    }
-                }
-            }
-        }
+     stage('Push to Nexus') {
+         steps {
+             script {
+                 docker.withRegistry('http://nexus:8083', 'nexus') {
+                     sh "docker push nexus:8083/gestion-station-ski:1.0-${env.BUILD_NUMBER}"
+                 }
+             }
+         }
+     }
 
         stage('Archive Artifacts') {
             steps {
