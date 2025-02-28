@@ -4,6 +4,7 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'http://192.168.73.128:9000'
         SONARQUBE_TOKEN = credentials('sonar-api-token')
+        DOCKER_IMAGE_NAME = 'my-spring-app'  // Name of your Docker image
     }
 
     stages {
@@ -16,14 +17,6 @@ pipeline {
         stage('Maven Build') {
             steps {
                 sh 'mvn clean install -DskipTests'
-            }
-            post {
-                success {
-                    echo "Maven build successful!"
-                }
-                failure {
-                    echo "Maven build failed!"
-                }
             }
         }
 
@@ -44,12 +37,15 @@ pipeline {
                     }
                 }
             }
-            post {
-                success {
-                    echo "SonarQube analysis successful!"
-                }
-                failure {
-                    echo "SonarQube analysis failed!"
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh """
+                        docker build -t ${DOCKER_IMAGE_NAME}:latest .
+                    """
                 }
             }
         }
@@ -57,10 +53,10 @@ pipeline {
 
     post {
         success {
-            echo "Build and SonarQube analysis successful!"
+            echo "Pipeline executed successfully!"
         }
         failure {
-            echo "Build or SonarQube analysis failed!"
+            echo "Pipeline failed!"
         }
     }
 }
