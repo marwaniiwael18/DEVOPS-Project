@@ -2,55 +2,37 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'http://192.168.73.128:9000'  // SonarQube URL
-        SONARQUBE_TOKEN = credentials('sonar-api-token')  // SonarQube token stored in Jenkins credentials
+        SONARQUBE_SERVER = 'http://192.168.73.128:9000'
+        SONARQUBE_TOKEN = credentials('sonar-api-token')
     }
 
     stages {
         stage('Git Checkout') {
             steps {
+                echo "Starting Git Checkout..."
                 git branch: 'registration', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
+                echo "Git Checkout completed!"
             }
         }
 
         stage('Maven Build') {
             steps {
+                echo "Starting Maven Build..."
                 sh 'mvn clean install'
-            }
-            post {
-                success {
-                    echo "Maven build successful!"
-                }
-                failure {
-                    echo "Maven build failed!"
-                }
+                echo "Maven Build completed!"
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    try {
-                        echo "Running SonarQube analysis..."
-                        sh """
-                            mvn sonar:sonar \
-                            -Dsonar.projectKey=tn.esprit.myspringapp \  // Use your actual project key here
-                            -Dsonar.host.url=${SONARQUBE_SERVER} \
-                            -Dsonar.login=${SONARQUBE_TOKEN}
-                        """
-                    } catch (Exception e) {
-                        echo "SonarQube analysis failed: ${e}"
-                        throw e  // Re-throw the exception to mark the stage as failed
-                    }
-                }
-            }
-            post {
-                success {
-                    echo "SonarQube analysis successful!"
-                }
-                failure {
-                    echo "SonarQube analysis failed!"
-                }
+                echo "Starting SonarQube Analysis..."
+                sh """
+                    mvn sonar:sonar \
+                    -Dsonar.projectKey=tn.esprit.myspringapp \
+                    -Dsonar.host.url=${SONARQUBE_SERVER} \
+                    -Dsonar.login=${SONARQUBE_TOKEN}
+                """
+                echo "SonarQube Analysis completed!"
             }
         }
     }
