@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-         registry = "nexus:8081"
+         registry = "172.20.0.2:8081"
             registryCredentials = "nexus"
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
