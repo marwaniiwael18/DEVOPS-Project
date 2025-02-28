@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'http://192.168.73.128:9000'
         SONARQUBE_TOKEN = credentials('sonar-api-token')
-        DOCKER_IMAGE_NAME = 'my-spring-app'
+        DOCKER_IMAGE_NAME = 'my-spring-app'  // Name of your Docker image
     }
 
     stages {
@@ -40,12 +40,6 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            agent {
-                docker {
-                    image 'docker:latest'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
                 script {
                     echo "Building Docker image..."
