@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-         registry = "nexus:8081"
-            registryCredentials = "nexus"
+        nexusHost = "172.20.0.2:8081" // Use Nexus IP directly from Docker network
+        registryCredentials = "nexus"
         imageName = "gestion-station-ski"
-        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
+        imageTag = "1.0-${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -28,19 +28,19 @@ pipeline {
                     echo "Checking MySQL connection..."
                     def ready = false
                     def attempts = 0
+
                     while (!ready && attempts < 15) {
                         try {
-                            sh '''
-                                mysql -h mysqldb -u root -proot -e 'SELECT 1;'
-                            '''
+                            sh 'mysql -h mysqldb -u root -proot -e "SELECT 1;"'
                             ready = true
                             echo "MySQL is ready!"
-                        } catch (exc) {
+                        } catch (Exception e) {
                             attempts++
                             echo "MySQL not ready yet (attempt ${attempts}/15), waiting..."
                             sh 'sleep 5'
                         }
                     }
+
                     if (!ready) {
                         error "MySQL did not become available in time"
                     }
@@ -87,21 +87,21 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."  // Fixed image name
+                    sh 'ls -l'  // Just to confirm Dockerfile is present
+                    sh "docker build -t ${nexusHost}/${imageName}:${imageTag} ."  // Build image tagged for Nexus
                 }
             }
         }
 
-       stage('Push to Nexus') {
-           steps {
-               script {
-                   docker.withRegistry('http://nexus:8081', registryCredentials) {
-                       sh "docker push nexus:8081/${imageName}:${imageTag}"
-                   }
-               }
-           }
-       }
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    docker.withRegistry("http://${nexusHost}", registryCredentials) {
+                        sh "docker push ${nexusHost}/${imageName}:${imageTag}"
+                    }
+                }
+            }
+        }
 
         stage('Archive Artifacts') {
             steps {
@@ -116,10 +116,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Build successful!'
+            echo '✅ Build successful!'
         }
         failure {
-            echo 'Build failed!'
+            echo '❌ Build failed!'
         }
     }
 }
