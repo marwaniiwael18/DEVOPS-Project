@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-jenkins
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: nassim_password  # Root password
+      MYSQL_DATABASE: stationSki
+      MYSQL_USER: nassim  # MySQL user set to "Nassim"
+      MYSQL_PASSWORD: nassim_password  # Password for the user "Nassim"
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork
+
+  spring-app:
+    build: .
+    container_name: spring-app
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-jenkins:3306/stationSki?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: nassim  # Username set to "Nassim"
+      SPRING_DATASOURCE_PASSWORD: nassim_password  # Password set to "Nassim" password
+    ports:
+      - "8089:8089"
+    networks:
+      - mynetwork
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+
+volumes:
+  jenkins_home:

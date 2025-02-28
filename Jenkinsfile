@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'http://192.168.73.128:9000'  // SonarQube URL
-        SONARQUBE_TOKEN = credentials('sonar-api-token')  // SonarQube token
+        SONARQUBE_TOKEN = credentials('sonar-api-token')  // SonarQube token stored in Jenkins credentials
     }
 
     stages {
@@ -31,10 +31,10 @@ pipeline {
             steps {
                 script {
                     try {
+                        echo "Running SonarQube analysis..."
                         sh """
-                            echo "Running SonarQube analysis..."
                             mvn sonar:sonar \
-                            -Dsonar.projectKey=your_project_key \
+                            -Dsonar.projectKey=tn.esprit.myspringapp \  // Use your actual project key here
                             -Dsonar.host.url=${SONARQUBE_SERVER} \
                             -Dsonar.login=${SONARQUBE_TOKEN}
                         """
