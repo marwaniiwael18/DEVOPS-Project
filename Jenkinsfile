@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'SonarQube'
         registryCredentials = "nexus"
-        registry = "http://172.20.0.2:8081"  // Nexus Repository
+        registry = "172.20.0.2:8081"  // Fix here, no 'http://'
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
     }
@@ -48,16 +48,16 @@ pipeline {
             }
         }
 
-      stage('Run Tests') {
-          steps {
-              sh 'mvn clean test'
-          }
-          post {
-              always {
-                  junit '**/target/surefire-reports/*.xml'
-              }
-          }
-      }
+        stage('Run Tests') {
+            steps {
+                sh 'mvn clean test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
@@ -88,20 +88,20 @@ pipeline {
             steps {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t nexus:8081/gestion-station-ski:$imageTag ."  // Remove 'http://'
+                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."  // Fixed image name
                 }
             }
         }
 
-                 stage('Push to Nexus') {
-                     steps {
-                         script {
-                             docker.withRegistry("http://$registry", registryCredentials) {
-                                 sh "docker push $registry/$imageName:$imageTag"  // Pousser l'image Docker vers Nexus
-                             }
-                         }
-                     }
-                 }
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    docker.withRegistry("http://${registry}", registryCredentials) {
+                        sh "docker push ${registry}/${imageName}:${imageTag}"  // Fixed image name
+                    }
+                }
+            }
+        }
 
         stage('Archive Artifacts') {
             steps {
