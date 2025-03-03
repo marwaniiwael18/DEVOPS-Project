@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'http://192.168.77.129:9000'
-        SONARQUBE_TOKEN = credentials('scanner')
+        SONARQUBE_TOKEN = credentials('sonar-api-token')
     }
 
     stages {
