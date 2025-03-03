@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'http://192.168.77.129:9000'
-        SONARQUBE_TOKEN = credentials('scanner')
+        SONARQUBE_TOKEN = credentials('scanner')  // Ensure 'scanner' matches the Jenkins credential ID
     }
 
     stages {
@@ -58,6 +58,26 @@ pipeline {
                         echo "SonarQube analysis failed: ${e}"
                         currentBuild.result = 'UNSTABLE'
                     }
+                }
+            }
+        }
+
+        stage('Package Application') {
+            steps {
+                script {
+                    echo "Packaging the application..."
+                    sh "mvn package -DskipTests"
+                    
+                    // Archive the packaged .jar file in Jenkins
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+            post {
+                success {
+                    echo "Application packaged successfully!"
+                }
+                failure {
+                    echo "Failed to package application!"
                 }
             }
         }
