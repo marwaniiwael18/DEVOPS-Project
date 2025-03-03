@@ -27,6 +27,31 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+            steps {
+                script {
+                    try {
+                        echo "Running JUnit tests..."
+                        sh 'mvn test'
+                    } catch (Exception e) {
+                        echo "JUnit tests failed: ${e}"
+                        throw e
+                    }
+                }
+            }
+            post {
+                success {
+                    echo "All JUnit tests passed!"
+                }
+                failure {
+                    echo "Some JUnit tests failed!"
+                    script {
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -53,14 +78,22 @@ pipeline {
                 }
             }
         }
+
+        stage('Publish Test Results') {
+            steps {
+                script {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "Build and SonarQube analysis successful!"
+            echo "Build, Tests, and SonarQube analysis completed successfully!"
         }
         failure {
-            echo "Build or SonarQube analysis failed!"
+            echo "Build, Tests, or SonarQube analysis failed!"
         }
     }
 }

@@ -30,6 +30,8 @@ public class Course implements Serializable {
 	Support support;
 	Float price;
 	int timeSlot;
+	@ManyToOne
+	private Instructor instructor;
 
 	@JsonIgnore
 	@OneToMany(mappedBy= "course")
