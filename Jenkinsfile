@@ -4,11 +4,12 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'http://192.168.77.129:9000'
         SONARQUBE_TOKEN = credentials('scanner')
-        DB_HOST = '192.168.77.129' // Use host IP instead of localhost
-        DB_PORT = '3306'
-        DB_NAME = 'stationSki'
-        DB_USER = 'root'
-        DB_PASS = ''
+        // Set these to your actual MySQL server
+        MYSQL_HOST = '192.168.77.129'  // Host IP where MySQL is running
+        MYSQL_PORT = '3306'
+        MYSQL_DB = 'stationSki'
+        MYSQL_USER = 'root'
+        MYSQL_PASS = ''
     }
 
     stages {
@@ -24,26 +25,18 @@ pipeline {
             }
         }
 
-        stage('Run Docker Compose') {
-            steps {
-                // Use docker-compose on the host machine
-                sh 'cd ${WORKSPACE} && docker-compose up -d'
-                // Wait for MySQL to be ready
-                sh 'sleep 15'
-            }
-        }
-
         stage('Run Tests') {
             steps {
                 script {
                     try {
-                        echo "Running JUnit tests..."
-                        sh '''
-                            mvn test -Dspring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?createDatabaseIfNotExist=true \
-                            -Dspring.datasource.username=${DB_USER} \
-                            -Dspring.datasource.password=${DB_PASS} \
+                        echo "Running JUnit tests using external MySQL..."
+                        sh """
+                            mvn test \
+                            -Dspring.datasource.url=jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}?createDatabaseIfNotExist=true \
+                            -Dspring.datasource.username=${MYSQL_USER} \
+                            -Dspring.datasource.password=${MYSQL_PASS} \
                             -Dspring.jpa.hibernate.ddl-auto=update
-                        '''
+                        """
                     } catch (Exception e) {
                         echo "JUnit tests failed: ${e}"
                         currentBuild.result = 'UNSTABLE'
@@ -73,13 +66,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            // Clean up resources, but only if we started them
-            sh 'cd ${WORKSPACE} && docker-compose down || true'
         }
     }
 }
