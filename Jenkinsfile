@@ -81,5 +81,14 @@ pipeline {
                 }
             }
         }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh "docker build -t myspringapp:${BUILD_NUMBER} ."
+                    sh "docker tag myspringapp:${BUILD_NUMBER} myspringapp:latest"
+                }
+            }
+        }
     }
 }
