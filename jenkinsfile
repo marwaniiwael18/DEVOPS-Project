@@ -16,29 +16,9 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build & Test') {
             steps {
-                script {
-                    sh 'mvn clean install'
-                }
-            }
-        }
-
-        stage('Check Maven Version') {
-            steps {
-                script {
-                    // Verify that Maven is installed correctly
-                    sh 'mvn -v'
-                }
-            }
-        }
-
-        stage('Unit Test') {
-            steps {
-                script {
-                    // Run unit tests and generate the JaCoCo report
-                    sh 'mvn test jacoco:report -Dspring.profiles.active=test'
-                }
+                sh 'mvn verify -Dspring.profiles.active=test -T 1C'
             }
         }
 
