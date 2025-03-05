@@ -4,6 +4,10 @@ pipeline {
     environment {
         gitBranch = "Yassine/Skier"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
+            registryCredentials = "nexus"
+                registry = "localhost:8083"
+                imageName = "YassineManai_4twin3_thunder_gestionski"
+                imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
 
           // SonarQube
                 SONAR_URL = "http://10.0.2.15:9000/"
@@ -57,6 +61,20 @@ pipeline {
                             }
                         }
              }
+              stage('Build Docker Image') {
+                         steps {
+                             sh "DOCKER_BUILDKIT=1 docker build -t $registry/$imageName:$imageTag ."
+                         }
+              }
+                 stage('Push to Nexus') {
+                          steps {
+                              script {
+                                  docker.withRegistry("http://$registry", registryCredentials) {
+                                      sh "docker push --quiet $registry/$imageName:$imageTag"
+                                  }
+                              }
+                          }
+                      }
     }
 
 
