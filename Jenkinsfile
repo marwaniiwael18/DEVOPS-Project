@@ -37,27 +37,28 @@ pipeline {
                 }
             }
         }
-    }
-     stage('SonarQube Analysis') {
-                steps {
-                    script {
-                        def scannerHome = tool 'Sonar-Scan'
-                        withSonarQubeEnv {
-                            sh """
-                                ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                                -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                                -Dsonar.sources=src \
-                                -Dsonar.java.binaries=target/classes \
-                                -Dsonar.sourceEncoding=UTF-8 \
-                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                                -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.scanner.force-deprecated-java-version=true
-                            """
+        stage('SonarQube Analysis') {
+                        steps {
+                            script {
+                                def scannerHome = tool 'Sonar-Scan'
+                                withSonarQubeEnv {
+                                    sh """
+                                        ${scannerHome}/bin/sonar-scanner \
+                                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                        -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                                        -Dsonar.sources=src \
+                                        -Dsonar.java.binaries=target/classes \
+                                        -Dsonar.sourceEncoding=UTF-8 \
+                                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                        -Dsonar.login=${SONAR_TOKEN} \
+                                        -Dsonar.scanner.force-deprecated-java-version=true
+                                    """
+                                }
+                            }
                         }
-                    }
-                }
-            }
+             }
+    }
+
 
     post {
         success {
