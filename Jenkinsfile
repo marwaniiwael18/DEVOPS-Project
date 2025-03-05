@@ -6,8 +6,8 @@ pipeline {
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
 
           // SonarQube
-                SONAR_URL = "http://sonar:9000"
-                SONAR_TOKEN = "squ_e0bf2d44f9b939e174de3785765df2a6ccffe154"
+                SONAR_URL = "http://10.0.2.15:9000/"
+                SONAR_TOKEN = "squ_45cb3eca7530f4e79b58393efd58ffb745510a0d"
                 SONAR_PROJECT_KEY = "YassineManai_4twin3_gestionski_v2"
                 SONAR_PROJECT_NAME = "YassineManai-4Twin3-GestionSki-V2"
     }
@@ -40,7 +40,7 @@ pipeline {
         stage('SonarQube Analysis') {
                         steps {
                             script {
-                                def scannerHome = tool 'Sonar-Scan'
+                                def scannerHome = tool 'SonarScan'
                                 withSonarQubeEnv {
                                     sh """
                                         ${scannerHome}/bin/sonar-scanner \
