@@ -4,6 +4,13 @@ pipeline {
     environment {
         gitBranch = "Kenza/TaskPist"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
+
+
+        // SonarQube
+        SONAR_URL = "http://192.168.1.100:9000"
+        SONAR_TOKEN = "squ_c3a0319f3f2ea74fdb5a385578223466fc3d8736"
+        SONAR_PROJECT_KEY = "kenzabenslimane_4twin3_gestionski_v2"
+        SONAR_PROJECT_NAME = "kenzabenslimane-4Twin3-GestionSki-V2"
     }
 
     stages {
@@ -19,6 +26,26 @@ pipeline {
         stage('Build & Test') {
             steps {
                 sh 'mvn verify -Dspring.profiles.active=test -T 1C'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScan'
+                    withSonarQubeEnv {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=src \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -Dsonar.scanner.force-deprecated-java-version=true
+                        """
+                    }
+                }
             }
         }
 
