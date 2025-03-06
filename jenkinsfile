@@ -19,7 +19,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh './mvnw clean install'
+                    sh 'mvn clean install'
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     // Verify that Maven is installed correctly
-                    sh './mvnw -v'
+                    sh 'mvn -v'
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     // Run unit tests and generate the JaCoCo report
-                    sh './mvnw test jacoco:report -Dspring.profiles.active=test'
+                    sh 'mvn test jacoco:report -Dspring.profiles.active=test'
                 }
             }
         }
@@ -46,7 +46,7 @@ pipeline {
             steps {
                 script {
                     // You can run your application here
-                    sh './mvnw spring-boot:run'
+                    sh 'mvn spring-boot:run'
                 }
             }
         }
