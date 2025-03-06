@@ -5,7 +5,7 @@ pipeline {
         gitBranch = "Yassine/Skier"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
             registryCredentials = "nexus"
-                registry = "http://10.0.2.15:8081/"
+                registry = "localhost:8081"
                 imageName = "yassinemanai_4twin3_thunder_gestionski"
                 imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
 
