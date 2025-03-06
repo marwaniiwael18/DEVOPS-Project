@@ -2,6 +2,10 @@ pipeline {
     agent any
 
     environment {
+        registryCredentials = "nexus"
+        registry = "localhost:8082"
+        imageName = "kenzabenslimane_4twin3_thunder_gestionski"
+        imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
         gitBranch = "Kenza/TaskPist"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
 
@@ -46,6 +50,11 @@ pipeline {
                         """
                     }
                 }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh "DOCKER_BUILDKIT=1 docker build -t $registry/$imageName:$imageTag ."
             }
         }
 

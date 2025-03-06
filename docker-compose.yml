@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mysql_db2:
+    image: mysql:8.0
+    container_name: mysql_db2
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: stationSki
+
+    ports:
+      - "3307:3306"
+    networks:
+      - spring_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  spring_app:
+    image: localhost:8082/kenzabenslimane_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
+    container_name: back3
+    depends_on:
+      mysql_db2:
+        condition: service_healthy  # Attend que MySQL soit prêt
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_OPEN_IN_VIEW: "false"
+      TZ: Africa/Tunis
+    ports:
+      - "8087:8087"
+    restart: always
+    networks:
+      - spring_network
+
+networks:
+  spring_network:
+    driver: bridge
