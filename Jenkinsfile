@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "172.20.0.4:8083"  // Use IP address instead of hostname
-        registryCredentials = "nexus"  // Make sure this matches Jenkins credentials
+        registry = "172.20.0.4:8083"  // Nexus Docker registry IP and port
+        registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
         imageName = "gestion-station-ski"
-        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
+        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique image tag for each build
     }
 
     stages {
@@ -96,7 +96,6 @@ pipeline {
         stage('Push to Nexus') {
             steps {
                 script {
-                    // Use echo to pipe password and avoid CLI password warning
                     withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
                             echo "${PASSWORD}" | docker login -u ${USERNAME} --password-stdin ${registry}
