@@ -88,20 +88,20 @@ pipeline {
             steps {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t ${registry}/gestion-station-ski:${imageTag} ."
+                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."
                 }
             }
         }
 
-     stage('Push to Nexus') {
-         steps {
-             script {
-                 docker.withRegistry('http://nexus:8083', 'nexus') {
-                     sh "docker push nexus:8083/gestion-station-ski:1.0-${env.BUILD_NUMBER}"
-                 }
-             }
-         }
-     }
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    docker.withRegistry("http://${registry}", registryCredentials) {
+                        sh "docker push ${registry}/${imageName}:${imageTag}"
+                    }
+                }
+            }
+        }
 
         stage('Archive Artifacts') {
             steps {
