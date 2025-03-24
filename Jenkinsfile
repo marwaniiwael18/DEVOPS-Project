@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "nexus:8083"  // Change to 8082 for Docker registry in Nexus
+        registry = "172.20.0.4:8083"  // Use IP address instead of hostname
         registryCredentials = "nexus"  // Make sure this matches Jenkins credentials
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
@@ -96,8 +96,12 @@ pipeline {
         stage('Push to Nexus') {
             steps {
                 script {
-                    docker.withRegistry("http://${registry}", registryCredentials) {
-                        sh "docker push ${registry}/${imageName}:${imageTag}"
+                    // Login to Nexus before pushing
+                    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh """
+                            docker login -u ${USERNAME} -p ${PASSWORD} ${registry}
+                            docker push ${registry}/${imageName}:${imageTag}
+                        """
                     }
                 }
             }
