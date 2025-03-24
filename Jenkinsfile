@@ -7,12 +7,20 @@ pipeline {
         registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique image tag for each build
+        gitBranch = "subscription-wael"
+        gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
+
+        // SonarQube configuration
+        SONAR_URL = "http://sonar:9000"
+        SONAR_TOKEN = "sqa_19f340c425ba1543e3dc43b3961674627c8c958b"
+        SONAR_PROJECT_KEY = "gestion-station-ski"
+        SONAR_PROJECT_NAME = "Gestion Station Ski"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
+                git branch: gitBranch, credentialsId: 'github', url: gitRepo
             }
         }
 
@@ -63,15 +71,17 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'scanner'
-                    withSonarQubeEnv('SonarQube') {
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
                         sh """
-                            ${scannerHome}/bin/sonar-scanner \\
-                            -Dsonar.projectKey=gestion-station-ski \\
-                            -Dsonar.sources=src/main/java \\
-                            -Dsonar.tests=src/test/java \\
-                            -Dsonar.java.binaries=target/classes \\
-                            -Dsonar.junit.reportsPath=target/surefire-reports \\
-                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=src/main/java \
+                            -Dsonar.tests=src/test/java \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.junit.reportsPath=target/surefire-reports \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                            -Dsonar.login=${SONAR_TOKEN}
                         """
                     }
                 }
