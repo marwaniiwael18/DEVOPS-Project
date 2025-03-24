@@ -96,10 +96,10 @@ pipeline {
         stage('Push to Nexus') {
             steps {
                 script {
-                    // Login to Nexus before pushing
+                    // Use echo to pipe password and avoid CLI password warning
                     withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
-                            docker login -u ${USERNAME} -p ${PASSWORD} ${registry}
+                            echo "${PASSWORD}" | docker login -u ${USERNAME} --password-stdin ${registry}
                             docker push ${registry}/${imageName}:${imageTag}
                         """
                     }
