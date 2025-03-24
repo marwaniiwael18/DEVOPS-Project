@@ -3,24 +3,16 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "172.20.0.4:8083"  // Nexus Docker registry IP and port
-        registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
+        registry = "nexus:8083"  // Change to 8082 for Docker registry in Nexus
+        registryCredentials = "nexus"  // Make sure this matches Jenkins credentials
         imageName = "gestion-station-ski"
-        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique image tag for each build
-        gitBranch = "subscription-wael"
-        gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
-
-        // SonarQube configuration
-        SONAR_URL = "http://sonar:9000"
-        SONAR_TOKEN = "sqa_19f340c425ba1543e3dc43b3961674627c8c958b"
-        SONAR_PROJECT_KEY = "gestion-station-ski"
-        SONAR_PROJECT_NAME = "Gestion Station Ski"
+        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: gitBranch, credentialsId: 'github', url: gitRepo
+                git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
             }
         }
 
@@ -71,17 +63,15 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'scanner'
-                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                    withSonarQubeEnv('SonarQube') {
                         sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.sources=src/main/java \
-                            -Dsonar.tests=src/test/java \
-                            -Dsonar.java.binaries=target/classes \
-                            -Dsonar.junit.reportsPath=target/surefire-reports \
-                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                            -Dsonar.login=${SONAR_TOKEN}
+                            ${scannerHome}/bin/sonar-scanner \\
+                            -Dsonar.projectKey=gestion-station-ski \\
+                            -Dsonar.sources=src/main/java \\
+                            -Dsonar.tests=src/test/java \\
+                            -Dsonar.java.binaries=target/classes \\
+                            -Dsonar.junit.reportsPath=target/surefire-reports \\
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                         """
                     }
                 }
@@ -98,23 +88,20 @@ pipeline {
             steps {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."
+                    sh "docker build -t ${registry}/gestion-station-ski:${imageTag} ."
                 }
             }
         }
 
-        stage('Push to Nexus') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        sh """
-                            echo "${PASSWORD}" | docker login -u ${USERNAME} --password-stdin ${registry}
-                            docker push ${registry}/${imageName}:${imageTag}
-                        """
-                    }
-                }
-            }
-        }
+     stage('Push to Nexus') {
+         steps {
+             script {
+                 docker.withRegistry('http://nexus:8083', 'nexus') {
+                     sh "docker push nexus:8083/gestion-station-ski:1.0-${env.BUILD_NUMBER}"
+                 }
+             }
+         }
+     }
 
         stage('Archive Artifacts') {
             steps {
