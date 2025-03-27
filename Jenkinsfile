@@ -108,5 +108,15 @@ pipeline {
                 }
             }
         }
+        stage('Run application ') {
+    steps {
+        script {
+            docker.withRegistry("http://"+registry, registryCredentials) {
+                sh("docker pull ${registry}/myspringapp:latest")
+                sh("docker-compose up -d ")
+            }
+        }
+    }
+}
     }
 }
