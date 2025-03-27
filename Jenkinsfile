@@ -4,6 +4,11 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'http://192.168.77.129:9000'
         SONARQUBE_TOKEN = credentials('scanner')  // Ensure 'scanner' matches the Jenkins credential ID
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "192.168.77.129:8081"
+        NEXUS_REPOSITORY = "maven-releases"
+        NEXUS_CREDENTIAL_ID = "nexus"
     }
 
     stages {
@@ -81,12 +86,50 @@ pipeline {
                 }
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
                     echo "Building Docker image..."
                     sh "docker build -t myspringapp:${BUILD_NUMBER} ."
                     sh "docker tag myspringapp:${BUILD_NUMBER} myspringapp:latest"
+                }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                script {
+                    // Read the POM version
+                    def pom = readMavenPom file: 'pom.xml'
+                    def version = pom.version
+
+                    // Deploy artifact to Nexus
+                    nexusArtifactUploader(
+                        nexusVersion: NEXUS_VERSION,
+                        protocol: NEXUS_PROTOCOL,
+                        nexusUrl: NEXUS_URL,
+                        groupId: pom.groupId,
+                        version: version,
+                        repository: NEXUS_REPOSITORY,
+                        credentialsId: NEXUS_CREDENTIAL_ID,
+                        artifacts: [
+                            [
+                                artifactId: pom.artifactId,
+                                classifier: '',
+                                file: "target/${pom.artifactId}-${version}.jar",
+                                type: 'jar'
+                            ]
+                        ]
+                    )
+                }
+            }
+            post {
+                success {
+                    echo "Artifact successfully uploaded to Nexus!"
+                }
+                failure {
+                    echo "Failed to upload artifact to Nexus!"
                 }
             }
         }
