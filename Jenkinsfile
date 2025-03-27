@@ -8,7 +8,7 @@ pipeline {
         NEXUS_PROTOCOL = "http"
         NEXUS_URL = "192.168.77.129:8081"
         NEXUS_REPOSITORY = "maven-releases"
-        NEXUS_CREDENTIAL_ID = "nexus"
+        NEXUS_CREDENTIAL_ID = "nexus-credentials"
     }
 
     stages {
@@ -100,36 +100,34 @@ pipeline {
         stage('Deploy to Nexus') {
             steps {
                 script {
-                    // Read the POM version
-                    def pom = readMavenPom file: 'pom.xml'
-                    def version = pom.version
-
-                    // Deploy artifact to Nexus
-                    nexusArtifactUploader(
-                        nexusVersion: NEXUS_VERSION,
-                        protocol: NEXUS_PROTOCOL,
-                        nexusUrl: NEXUS_URL,
-                        groupId: pom.groupId,
-                        version: version,
-                        repository: NEXUS_REPOSITORY,
-                        credentialsId: NEXUS_CREDENTIAL_ID,
-                        artifacts: [
-                            [
-                                artifactId: pom.artifactId,
-                                classifier: '',
-                                file: "target/${pom.artifactId}-${version}.jar",
-                                type: 'jar'
+                    try {
+                        // Read POM details
+                        def pom = readMavenPom file: 'pom.xml'
+                        
+                        // Upload to Nexus
+                        nexusArtifactUploader(
+                            nexusVersion: NEXUS_VERSION,
+                            protocol: NEXUS_PROTOCOL,
+                            nexusUrl: NEXUS_URL,
+                            groupId: pom.groupId,
+                            version: pom.version,
+                            repository: NEXUS_REPOSITORY,
+                            credentialsId: NEXUS_CREDENTIAL_ID,
+                            artifacts: [
+                                [
+                                    artifactId: pom.artifactId,
+                                    classifier: '',
+                                    file: "target/${pom.artifactId}-${pom.version}.jar",
+                                    type: 'jar'
+                                ]
                             ]
-                        ]
-                    )
-                }
-            }
-            post {
-                success {
-                    echo "Artifact successfully uploaded to Nexus!"
-                }
-                failure {
-                    echo "Failed to upload artifact to Nexus!"
+                        )
+                        
+                        echo "Artifact successfully uploaded to Nexus!"
+                    } catch (Exception e) {
+                        echo "Failed to upload artifact to Nexus: ${e}"
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             }
         }
