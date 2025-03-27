@@ -4,11 +4,8 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'http://192.168.77.129:9000'
         SONARQUBE_TOKEN = credentials('scanner')  // Ensure 'scanner' matches the Jenkins credential ID
-        NEXUS_VERSION = "nexus3"
-        NEXUS_PROTOCOL = "http"
-        NEXUS_URL = "192.168.77.129:8081"
-        NEXUS_REPOSITORY = "maven-releases"
-        NEXUS_CREDENTIAL_ID = "nexus-credentials"
+        registryCredentials = "nexus"  // Nexus registry credentials ID
+        registry = "192.168.77.129:8083"  // Nexus Docker registry URL
     }
 
     stages {
@@ -91,8 +88,10 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image..."
-                    sh "docker build -t myspringapp:${BUILD_NUMBER} ."
-                    sh "docker tag myspringapp:${BUILD_NUMBER} myspringapp:latest"
+                    // Build and tag the Docker image with the build number
+                    sh "docker build -t ${registry}/myspringapp:${BUILD_NUMBER} ."
+                    // Optionally, tag the image as 'latest'
+                    sh "docker tag ${registry}/myspringapp:${BUILD_NUMBER} ${registry}/myspringapp:latest"
                 }
             }
         }
@@ -100,33 +99,11 @@ pipeline {
         stage('Deploy to Nexus') {
             steps {
                 script {
-                    try {
-                        // Read POM details
-                        def pom = readMavenPom file: 'pom.xml'
-                        
-                        // Upload to Nexus
-                        nexusArtifactUploader(
-                            nexusVersion: NEXUS_VERSION,
-                            protocol: NEXUS_PROTOCOL,
-                            nexusUrl: NEXUS_URL,
-                            groupId: pom.groupId,
-                            version: pom.version,
-                            repository: NEXUS_REPOSITORY,
-                            credentialsId: NEXUS_CREDENTIAL_ID,
-                            artifacts: [
-                                [
-                                    artifactId: pom.artifactId,
-                                    classifier: '',
-                                    file: "target/${pom.artifactId}-${pom.version}.jar",
-                                    type: 'jar'
-                                ]
-                            ]
-                        )
-                        
-                        echo "Artifact successfully uploaded to Nexus!"
-                    } catch (Exception e) {
-                        echo "Failed to upload artifact to Nexus: ${e}"
-                        currentBuild.result = 'UNSTABLE'
+                    // Upload Docker Image to Nexus Registry
+                    docker.withRegistry("http://${registry}", registryCredentials) {
+                        // Push the Docker image with both tags: BUILD_NUMBER and latest
+                        sh "docker push ${registry}/myspringapp:${BUILD_NUMBER}"
+                        sh "docker push ${registry}/myspringapp:latest"
                     }
                 }
             }
