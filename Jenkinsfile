@@ -1,27 +1,23 @@
 pipeline {
     agent any
-
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "nexus:8083"  // Change to 8082 for Docker registry in Nexus
-        registryCredentials = "nexus"  // Make sure this matches Jenkins credentials
+        registry = "nexus:8083"  // Nexus Docker registry address
+        registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
     }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
             }
         }
-
         stage('Build') {
             steps {
                 sh 'mvn clean compile'
             }
         }
-
         stage('Wait for MySQL') {
             steps {
                 script {
@@ -47,7 +43,6 @@ pipeline {
                 }
             }
         }
-
         stage('Run Tests') {
             steps {
                 sh 'mvn clean test'
@@ -58,7 +53,6 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -77,39 +71,36 @@ pipeline {
                 }
             }
         }
-
         stage('Package') {
             steps {
                 sh 'mvn clean package -DskipTests'
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t ${registry}/gestion-station-ski:${imageTag} ."
+                    // Build with the full registry path in the image name
+                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."
                 }
             }
         }
-
-     stage('Push to Nexus') {
-         steps {
-             script {
-                 docker.withRegistry('http://nexus:8083', 'nexus') {
-                     sh "docker push nexus:8083/gestion-station-ski:1.0-${env.BUILD_NUMBER}"
-                 }
-             }
-         }
-     }
-
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    // Use withDockerRegistry for proper authentication
+                    withDockerRegistry([url: "http://${registry}", credentialsId: registryCredentials]) {
+                        sh "docker push ${registry}/${imageName}:${imageTag}"
+                    }
+                }
+            }
+        }
         stage('Archive Artifacts') {
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
-
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
