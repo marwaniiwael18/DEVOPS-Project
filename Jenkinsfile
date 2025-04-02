@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "nexus:8083/docker-hosted"  // Nexus Docker registry address
+        registry = "172.20.0.3:8083"  // Nexus Docker registry address
         registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
@@ -85,15 +85,16 @@ pipeline {
                 }
             }
         }
-        stage('Push to Nexus') {
-            steps {
-                script {
-                    // Use withDockerRegistry for proper authentication
-                    withDockerRegistry([url: "http://${registry}", credentialsId: registryCredentials]) {
-                        sh "docker push ${registry}/${imageName}:${imageTag}"
-                    }
-                }
-            }
+        stage('Deploy to Nexus') {
+        steps{
+        script {
+        docker.withRegistry("http://"+registry,
+        registryCredentials ) {
+        sh('docker push $registry/nodemongoapp:5.0 ')
+        }
+        }
+        }
+        }
         }
         stage('Archive Artifacts') {
             steps {
