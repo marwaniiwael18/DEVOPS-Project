@@ -85,23 +85,22 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Nexus') {
-        steps{
-        script {
-        docker.withRegistry("http://"+registry,
-        registryCredentials ) {
-        sh('docker push $registry/nodemongoapp:5.0 ')
+        stage('Deploy to Nexus') {  // Keep this inside 'stages'
+            steps {
+                script {
+                    docker.withRegistry("http://${registry}", registryCredentials) {
+                        sh "docker push ${registry}/${imageName}:${imageTag}"
+                    }
+                }
+            }
         }
-        }
-        }
-        }
-        }
-        stage('Archive Artifacts') {
+        stage('Archive Artifacts') {  // Ensure this is inside 'stages'
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-    }
+    }  // <-- This correctly closes 'stages'
+
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
