@@ -5,7 +5,7 @@ pipeline {
         gitBranch = "Yassine/Skier"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
             registryCredentials = "nexus"
-                registry = "localhost:8081"
+                registry = "10.0.2.15:8083"
                 imageName = "yassinemanai_4twin3_thunder_gestionski"
                 imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
 
@@ -65,10 +65,14 @@ pipeline {
                         }
              }
               stage('Build Docker Image') {
-                         steps {
-                             sh "DOCKER_BUILDKIT=1 docker build -t $registry/$imageName:$imageTag ."
-                         }
-              }
+                        steps {
+                            script {
+                                sh 'ls -l'  // Verify Dockerfile presence
+                                // Build with the full registry path in the image name
+                                sh "docker build -t ${registry}/${imageName}:${imageTag} ."
+                            }
+                        }
+                    }
                  stage('Push to Nexus') {
                           steps {
                               script {
