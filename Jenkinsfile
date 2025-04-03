@@ -34,13 +34,16 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests') {
-            steps {
-                script {
-                    sh 'mvn test -Dspring.profiles.active=test'  // Run Unit Tests
-                }
-            }
-        }
+         stage('Run Tests') {
+                  steps {
+                      sh 'mvn clean test'
+                  }
+                  post {
+                      always {
+                          junit '**/target/surefire-reports/*.xml'
+                      }
+                  }
+              }
         stage('SonarQube Analysis') {
                         steps {
                             script {
