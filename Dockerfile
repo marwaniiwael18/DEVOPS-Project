@@ -1,30 +1,27 @@
-# Étape 1: Construction de l'application avec Maven
-FROM maven:3.8.8-eclipse-temurin-17 AS builder
+# Use an official Maven image as a parent image
+FROM maven:3.8.4-openjdk-11 AS builder
 
-# Définir le répertoire de travail
+# Set the working directory
 WORKDIR /app
 
-# Copier seulement les fichiers nécessaires pour optimiser le cache Docker
-COPY pom.xml ./
-RUN mvn dependency:go-offline --no-transfer-progress
+# Copy the pom.xml file and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Copier le reste des fichiers du projet
-COPY src/ ./src/
+# Copy the rest of the application code
+COPY src ./src
 
-# Construire le projet avec Maven, en évitant les tests
-RUN mvn clean package -DskipTests --no-transfer-progress && rm -rf /root/.m2/repository
+# Package the application
+RUN mvn package -DskipTests
 
-# Étape 2: Créer l'image finale avec OpenJDK pour exécuter le JAR
-FROM openjdk:17-jdk-slim
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:11-jre-slim
 
-# Définir le répertoire de travail
+# Set the working directory
 WORKDIR /app
 
-# Copier le fichier JAR généré depuis l'étape précédente
-COPY --from=builder /app/target/*.jar /app/app.jar
+# Copy the packaged application from the builder stage
+COPY --from=builder /app/target/*.jar app.jar
 
-# Exposer le port 8089 pour l'application
-EXPOSE 8089
-
-# Lancer l'application avec la commande java -jar
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
