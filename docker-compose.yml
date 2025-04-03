@@ -16,7 +16,7 @@ services:
       - spring_network
 
   spring_app:
-    image: localhost:8081/yassinemanai_4twin3_thunder_gestionski:${imageTag}
+    image: 10.0.2.15:8083/yassinemanai_4twin3_thunder_gestionski:${imageTag}
     container_name: spring_backend
     depends_on:
       - mysql_db
