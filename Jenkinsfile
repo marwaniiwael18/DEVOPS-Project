@@ -11,7 +11,7 @@ pipeline {
 
         // SonarQube
         SONAR_URL = "http://10.0.2.15:9000/"
-        SONAR_TOKEN = "squ_45cb3eca7530f4e79b58393efd58ffb745510a0d"
+        SONAR_TOKEN = "squ_bda70cd162139dc37d61bec3996c7f06b74aa296"
         SONAR_PROJECT_KEY = "YassineManai_4twin3_gestionski_v2"
         SONAR_PROJECT_NAME = "YassineManai-4Twin3-GestionSki-V2"
     }
@@ -65,7 +65,11 @@ pipeline {
                 }
             }
         }
-
+        stage('Package') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
