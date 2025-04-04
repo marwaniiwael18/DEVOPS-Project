@@ -7,7 +7,7 @@ pipeline {
         registryCredentials = "nexus"
         registry = "10.0.2.15:8083"
         imageName = "yassinemanai_4twin3_thunder_gestionski"
-        imageTag = "1.0-${env.BUILD_NUMBER}"
+        imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
 
         // SonarQube
         SONAR_URL = "http://10.0.2.15:9000/"
@@ -65,12 +65,6 @@ pipeline {
                 }
             }
         }
-
-          stage('Package') {
-                    steps {
-                        sh 'mvn clean package -DskipTests'
-                    }
-                }
 
         stage('Build Docker Image') {
             steps {
