@@ -75,7 +75,8 @@ pipeline {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
                     // Build with the full registry path in the image name
-                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."
+                  sh "docker build --network=host -t ${registry}/${imageName}:${imageTag} ."
+
                 }
             }
         }
