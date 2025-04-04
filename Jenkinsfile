@@ -81,7 +81,7 @@ pipeline {
             }
         }
 
-         stage('Deploy to Nexus') {  // Keep this inside 'stages'
+          stage('Deploy to Nexus') {  // Keep this inside 'stages'
                    steps {
                        script {
                            docker.withRegistry("http://${registry}", registryCredentials) {
@@ -89,13 +89,12 @@ pipeline {
                            }
                        }
                    }
-         }
-          stage('Archive Artifacts') {  // Ensure this is inside 'stages'
+               }
+               stage('Archive Artifacts') {  // Ensure this is inside 'stages'
                    steps {
                        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                    }
                }
-           }  // <-- This correctly closes 'stages'
     }
 
     post {
