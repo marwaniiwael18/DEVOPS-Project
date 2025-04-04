@@ -16,7 +16,7 @@ services:
       - spring_network
 
   spring_app:
-    image: 172.20.0.4:8081/gestion-station-ski:${imageTag}
+    image: 172.20.0.4:8083/gestion-station-ski:${imageTag}
     container_name: spring_backend
     depends_on:
       - mysql_db
