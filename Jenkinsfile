@@ -88,10 +88,9 @@ pipeline {
         stage('Deploy to Nexus') {
             steps {
                 script {
-                    // Use withRegistry without Docker object
-                    withRegistry("http://172.20.0.3:8083", registryCredentials) {
-                        sh "docker push ${registry}/${imageName}:${imageTag}"
-                    }
+                   withRegistry("http://172.20.0.3:8083", registryCredentials) {
+                       sh "docker push 172.20.0.3:8083/${imageName}:${imageTag}"
+                   }
                 }
             }
         }
