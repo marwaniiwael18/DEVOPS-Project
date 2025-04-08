@@ -85,7 +85,7 @@ pipeline {
                 }
             }
         }
-        stage('Pushs to Nexus') {
+        stage('Push to Nexus') {
                     steps {
                         script {
                             docker.withRegistry("http://$registry", registryCredentials) {
