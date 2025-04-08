@@ -85,15 +85,14 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Nexus') {  // Keep this inside 'stages'
-                           steps {
-                               script {
-                                   docker.withRegistry("http://${registry}", registryCredentials) {
-                                       sh "docker push ${registry}/${imageName}:${imageTag}"
-                                   }
-                               }
-                           }
-                       }
+        stage('Deploy to Nexus') {
+            steps {
+                script {
+                    sh 'docker login -u admin -p your_password http://172.20.0.3:8083'
+                    sh "docker push ${registry}/${imageName}:${imageTag}"
+                }
+            }
+        }
         stage('Archive Artifacts') {  // Ensure this is inside 'stages'
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
