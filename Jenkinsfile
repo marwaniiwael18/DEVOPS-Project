@@ -85,16 +85,15 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Nexus') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
-                        sh 'echo $NEXUS_PASS | docker login -u $NEXUS_USER --password-stdin http://172.20.0.3:8083'
-                        sh "docker push ${registry}/${imageName}:${imageTag}"
+        stage('Push to Nexus') {
+                    steps {
+                        script {
+                            docker.withRegistry("http://$registry", registryCredentials) {
+                                sh "docker push --quiet $registry/$imageName:$imageTag"
+                            }
+                        }
                     }
                 }
-            }
-        }
         stage('Archive Artifacts') {  // Ensure this is inside 'stages'
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
