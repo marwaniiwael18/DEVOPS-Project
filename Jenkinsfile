@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "172.20.0.3:8083"  // Nexus Docker registry address
+        registry = "172.20.0.3:8083"  // Nexus Docker registry addres
         registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
         imageName = "gestion-station-ski"
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
