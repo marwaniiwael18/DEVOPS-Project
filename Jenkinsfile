@@ -88,9 +88,10 @@ pipeline {
         stage('Deploy to Nexus') {
             steps {
                 script {
-                   withRegistry("http://172.20.0.3:8083", registryCredentials) {
-                       sh "docker push 172.20.0.3:8083/${imageName}:${imageTag}"
-                   }
+                    // Create a more explicit Docker login to troubleshoot
+                    sh 'docker login -u admin -p M@@k211JMT6434 http://172.20.0.3:8083'
+                    // Then try the push
+                    sh "docker push ${registry}/${imageName}:${imageTag}"
                 }
             }
         }
