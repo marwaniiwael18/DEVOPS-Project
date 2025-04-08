@@ -88,10 +88,10 @@ pipeline {
         stage('Deploy to Nexus') {
             steps {
                 script {
-                    // Create a more explicit Docker login to troubleshoot
-                    sh 'docker login -u admin -p M@@k211JMT6434 http://172.20.0.3:8083'
-                    // Then try the push
-                    sh "docker push ${registry}/${imageName}:${imageTag}"
+                    withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                        sh 'echo $NEXUS_PASS | docker login -u $NEXUS_USER --password-stdin http://172.20.0.3:8083'
+                        sh "docker push ${registry}/${imageName}:${imageTag}"
+                    }
                 }
             }
         }
