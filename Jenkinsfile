@@ -85,15 +85,18 @@ pipeline {
                 }
             }
         }
+
         stage('Push to Nexus') {
-                    steps {
-                        script {
-                            docker.withRegistry("http://$registry", registryCredentials) {
-                                sh "docker push --quiet $registry/$imageName:$imageTag"
-                            }
-                        }
-                    }
-                }
+             steps {
+                 script {
+                     // Make sure your Jenkins credentials exist with ID 'nexus'
+                     withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                         sh "docker login -u ${USER} -p ${PASS} http://172.20.0.3:8083"
+                         sh "docker push ${registry}/${imageName}:${imageTag}"
+                     }
+                 }
+             }
+         }
         stage('Archive Artifacts') {  // Ensure this is inside 'stages'
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
