@@ -47,7 +47,8 @@ services:
       - "8081:8081"
       - "8083:8083"
     networks:
-      - spring_network
+      devops-net:
+        ipv4_address: 172.20.0.3
     volumes:
       - nexus-data:/nexus-data
 
