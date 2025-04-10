@@ -109,13 +109,20 @@ pipeline {
             }
         }
 
-        stage('Start Monitoring Stack') {
-            steps {
-                script {
-                    echo "Starting Prometheus and Grafana via Docker Compose..."
-                    sh 'docker compose -f docker-compose.yml up -d prometheus grafana'
-                }
+        stage('Check if the Containers are Running') {
+    steps {
+        script {
+            // List running containers - using the actual filename
+            def runningContainers = sh(script: 'docker compose -f docker-compose.yml ps', returnStdout: true).trim()
+            if (runningContainers) {
+                echo "The following containers are running:"
+                echo "$runningContainers"
+                sh 'docker compose -f docker-compose.yml down'
+            } else {
+                echo "No containers are currently running."
             }
         }
+    }
+}
     }
 }
