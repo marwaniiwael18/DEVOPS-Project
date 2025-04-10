@@ -109,12 +109,22 @@ pipeline {
             }
         }
         stage('Start Monitoring Stack') {
-    steps {
-        script {
-            echo "Starting Prometheus and Grafana via Docker Compose..."
-            sh 'docker-compose -f docker-compose.yml up -d prometheus grafana'
+            steps {
+                script {
+                    echo "Checking Docker and Docker Compose installation..."
+                    sh 'which docker || echo "Docker not found"'
+                    sh 'docker --version || echo "Docker version command failed"'
+                    sh 'which docker-compose || echo "docker-compose not found"'
+                    sh 'docker-compose --version || echo "docker-compose version command failed"'
+            
+                    echo "Checking docker-compose.yml file..."
+                    sh 'ls -la'
+                    sh 'cat docker-compose.yml || echo "docker-compose.yml file not found"'
+            
+                    echo "Attempting to start monitoring stack..."
+                    sh 'docker-compose -f docker-compose.yml up -d prometheus grafana || echo "Command failed with code $?"'
+                }
+            }
         }
-    }
-}
     }
 }
