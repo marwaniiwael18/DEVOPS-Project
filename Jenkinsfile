@@ -108,5 +108,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Start Monitoring Stack') {
+            steps {
+                script {
+                    echo "Starting Prometheus and Grafana via Docker Compose..."
+                    sh 'docker compose -f docker-compose.yml up -d prometheus grafana'
+                }
+            }
+        }
     }
 }
