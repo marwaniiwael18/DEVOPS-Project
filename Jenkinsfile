@@ -2,10 +2,9 @@ pipeline {
     agent any
     environment {
         SONARQUBE_SERVER = 'SonarQube'
-        registry = "172.20.0.3:8083"  // Nexus Docker registry addres
-        registryCredentials = "nexus"  // Jenkins credentials ID for Nexus
-        imageName = "gestion-station-ski"
+        dockerHubRepo = 'marwaniwael/gestion-ski'
         imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
+        dockerHubCredentials = 'docker-hub'  // Jenkins credentials ID for Docker Hub (you must add it in Jenkins)
     }
     stages {
         stage('Checkout') {
@@ -80,30 +79,27 @@ pipeline {
             steps {
                 script {
                     sh 'ls -l'  // Verify Dockerfile presence
-                    // Build with the full registry path in the image name
-                    sh "docker build -t ${registry}/${imageName}:${imageTag} ."
+                    sh "docker build -t ${dockerHubRepo}:${imageTag} ."
                 }
             }
         }
 
-        stage('Push to Nexus') {
-             steps {
-                 script {
-                     // Make sure your Jenkins credentials exist with ID 'nexus'
-                     withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                         sh "docker login -u ${USER} -p ${PASS} http://172.20.0.3:8083"
-                         sh "docker push ${registry}/${imageName}:${imageTag}"
-                     }
-                 }
-             }
-         }
-        stage('Archive Artifacts') {  // Ensure this is inside 'stages'
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', dockerHubCredentials) {
+                        sh "docker push ${dockerHubRepo}:${imageTag}"
+                    }
+                }
+            }
+        }
+
+        stage('Archive Artifacts') {
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-    }  // <-- This correctly closes 'stages'
-
+    }
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
