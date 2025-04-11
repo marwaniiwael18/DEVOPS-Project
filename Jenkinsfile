@@ -5,7 +5,9 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         dockerHubRepo = 'marwaniwael/gestion-ski'
         imageTag = "1.0-${env.BUILD_NUMBER}"
-        dockerHubCredentials = 'docker-hub'  // Set this in Jenkins credentials
+        dockerHubCredentials = 'docker-hub'
+        EMAIL_RECIPIENTS = 'marwani.wael88@gmail.com'
+        EMAIL_SENDER = 'marwani.wael88@gmail.com'
     }
 
     stages {
@@ -87,7 +89,6 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // Clean up old MySQL container if exists
                     sh '''
                         if [ "$(docker ps -a -q -f name=mysql_db)" ]; then
                             echo "Removing existing mysql_db container..."
@@ -97,7 +98,6 @@ pipeline {
                         docker-compose down || true
                     '''
 
-                    // Replace image tag in docker-compose and start app
                     sh "sed -i 's|marwaniwael/gestion-ski:IMAGE_TAG|${dockerHubRepo}:${imageTag}|g' docker-compose.yml"
                     sh "cat docker-compose.yml"
 
@@ -125,10 +125,65 @@ pipeline {
 
     post {
         success {
-            echo '✅ Build successful!'
+            echo "✅ Build successful!"
+            emailext(
+                subject: "✅ [JENKINS] Build #${BUILD_NUMBER} - ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                body: """
+                    <html>
+                    <body>
+                        <h2>✅ Build Successful: ${env.JOB_NAME}</h2>
+                        <p>Build #${BUILD_NUMBER} completed successfully!</p>
+
+                        <h3>Build Info:</h3>
+                        <ul>
+                            <li>Status: ${currentBuild.currentResult}</li>
+                            <li>Job: ${env.JOB_NAME}</li>
+                            <li>Tag: ${dockerHubRepo}:${imageTag}</li>
+                            <li>Build URL: <a href="${BUILD_URL}">${BUILD_URL}</a></li>
+                            <li>Duration: ${currentBuild.durationString}</li>
+                        </ul>
+
+                        <p><a href="${BUILD_URL}console">View Console Output</a></p>
+                        <p>-- Jenkins CI/CD</p>
+                    </body>
+                    </html>
+                """,
+                to: "${EMAIL_RECIPIENTS}",
+                from: "${EMAIL_SENDER}",
+                mimeType: 'text/html',
+                attachLog: true
+            )
         }
+
         failure {
-            echo '❌ Build failed!'
+            echo "❌ Build failed!"
+            emailext(
+                subject: "❌ [JENKINS] Build #${BUILD_NUMBER} - ${currentBuild.currentResult} - ${env.JOB_NAME}",
+                body: """
+                    <html>
+                    <body>
+                        <h2>❌ Build Failed: ${env.JOB_NAME}</h2>
+                        <p>Build #${BUILD_NUMBER} has failed!</p>
+
+                        <h3>Build Info:</h3>
+                        <ul>
+                            <li>Status: ${currentBuild.currentResult}</li>
+                            <li>Job: ${env.JOB_NAME}</li>
+                            <li>Tag: ${dockerHubRepo}:${imageTag}</li>
+                            <li>Build URL: <a href="${BUILD_URL}">${BUILD_URL}</a></li>
+                            <li>Duration: ${currentBuild.durationString}</li>
+                        </ul>
+
+                        <p><a href="${BUILD_URL}console">View Console Output</a></p>
+                        <p>-- Jenkins CI/CD</p>
+                    </body>
+                    </html>
+                """,
+                to: "${EMAIL_RECIPIENTS}",
+                from: "${EMAIL_SENDER}",
+                mimeType: 'text/html',
+                attachLog: true
+            )
         }
     }
 }
