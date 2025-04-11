@@ -12,11 +12,14 @@ pipeline {
                 git branch: 'subscription-wael', credentialsId: 'github', url: 'https://github.com/marwaniiwael18/DEVOPS-Project.git'
             }
         }
+
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                // Add JaCoCo agent here
+                sh 'mvn clean compile jacoco:prepare-agent'
             }
         }
+
         stage('Wait for MySQL') {
             steps {
                 script {
@@ -42,9 +45,10 @@ pipeline {
                 }
             }
         }
+
         stage('Run Tests') {
             steps {
-                sh 'mvn clean test'
+                sh 'mvn test jacoco:report'
             }
             post {
                 always {
@@ -52,6 +56,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Publish JaCoCo Report') {
+            steps {
+                jacoco(
+                    execPattern: 'target/jacoco.exec',
+                    classPattern: 'target/classes',
+                    sourcePattern: 'src/main/java',
+                    exclusionPattern: '**/test/**'
+                )
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -70,11 +86,13 @@ pipeline {
                 }
             }
         }
+
         stage('Package') {
             steps {
                 sh 'mvn clean package -DskipTests'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -100,6 +118,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
