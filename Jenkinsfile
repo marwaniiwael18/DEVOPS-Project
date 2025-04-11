@@ -151,7 +151,14 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true
+                attachLog: true,
+                // Use the credentials from Jenkins
+                smtpAuth: true,
+                smtpUsername: 'marwaniwael88@gmail.com',
+                smtpPassword: credentials('gmail-smtp-creds'),
+                smtpHost: 'smtp.gmail.com',
+                smtpPort: '587',
+                useTLS: true
             )
         }
 
@@ -182,8 +189,16 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true
+                attachLog: true,
+                // Use the credentials from Jenkins
+                smtpAuth: true,
+                smtpUsername: 'marwaniwael88@gmail.com',
+                smtpPassword: credentials('gmail-smtp-creds'),
+                smtpHost: 'smtp.gmail.com',
+                smtpPort: '587',
+                useTLS: true
             )
         }
     }
+
 }
