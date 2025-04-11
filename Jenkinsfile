@@ -152,13 +152,10 @@ pipeline {
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
                 attachLog: true,
-                // Use the credentials from Jenkins
-                smtpAuth: true,
-                smtpUsername: 'marwaniwael88@gmail.com',
-                smtpPassword: credentials('gmail-smtp-creds'),
-                smtpHost: 'smtp.gmail.com',
-                smtpPort: '587',
-                useTLS: true
+                // SMTP Settings through the Jenkins email extension settings
+                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+                defaultSubject: "Build ${BUILD_NUMBER} - ${currentBuild.currentResult}",
+                defaultContent: "Build Info:\nBuild URL: ${BUILD_URL}"
             )
         }
 
@@ -190,15 +187,13 @@ pipeline {
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
                 attachLog: true,
-                // Use the credentials from Jenkins
-                smtpAuth: true,
-                smtpUsername: 'marwaniwael88@gmail.com',
-                smtpPassword: credentials('gmail-smtp-creds'),
-                smtpHost: 'smtp.gmail.com',
-                smtpPort: '587',
-                useTLS: true
+                // SMTP Settings through the Jenkins email extension settings
+                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+                defaultSubject: "Build ${BUILD_NUMBER} - ${currentBuild.currentResult}",
+                defaultContent: "Build Info:\nBuild URL: ${BUILD_URL}"
             )
         }
     }
+
 
 }
