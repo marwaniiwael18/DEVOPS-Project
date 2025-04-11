@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 services:
   mysql_db2:
@@ -6,25 +6,26 @@ services:
     container_name: mysql_db2
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root # Explicitly set MYSQL_ROOT_PASSWORD
       MYSQL_DATABASE: stationSki
-        
     ports:
       - "3307:3306"
+    volumes:
+      - mysql_db_data:/var/lib/mysql
     networks:
       - spring_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"] # Use the hardcoded password
       interval: 10s
       retries: 5
       start_period: 30s
-
+  
   spring_app:
-    image: localhost:8083/aymenjallouli_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
+    image: localhost:8083/aymenjallouli_4twin3_thunder_gestionski:${IMAGE_TAG} # Use dynamic IMAGE_TAG
     container_name: back3
     depends_on:
       mysql_db2:
-        condition: service_healthy  # Attend que MySQL soit prêt
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
@@ -43,3 +44,7 @@ services:
 networks:
   spring_network:
     driver: bridge
+
+volumes:
+  mysql_db_data:
+    driver: local
