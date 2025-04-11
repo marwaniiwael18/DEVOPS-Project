@@ -1,11 +1,13 @@
 pipeline {
     agent any
+
     environment {
         SONARQUBE_SERVER = 'SonarQube'
         dockerHubRepo = 'marwaniwael/gestion-ski'
-        imageTag = "1.0-${env.BUILD_NUMBER}"  // Unique Tag per Build
-        dockerHubCredentials = 'docker-hub'  // Jenkins credentials ID for Docker Hub (you must add it in Jenkins)
+        imageTag = "1.0-${env.BUILD_NUMBER}"
+        dockerHubCredentials = 'docker-hub'  // Set this in Jenkins credentials
     }
+
     stages {
         stage('Checkout') {
             steps {
@@ -15,12 +17,9 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Add JaCoCo agent here
                 sh 'mvn clean compile jacoco:prepare-agent'
             }
         }
-
-
 
         stage('Run Tests') {
             steps {
@@ -48,7 +47,7 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'scanner'
-                    withSonarQubeEnv('SonarQube') {
+                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \\
                             -Dsonar.projectKey=gestion-station-ski \\
@@ -71,10 +70,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'ls -l'  // Verify Dockerfile presence
-                    sh "docker build -t ${dockerHubRepo}:${imageTag} ."
-                }
+                sh "docker build -t ${dockerHubRepo}:${imageTag} ."
             }
         }
 
@@ -88,48 +84,51 @@ pipeline {
             }
         }
 
-         stage('Run Application') {
-             steps {
-                 script {
-                     // Pull image from Docker Hub
-                     sh "docker pull ${dockerHubRepo}:${imageTag}"
+        stage('Run Application') {
+            steps {
+                script {
+                    // Clean up old MySQL container if exists
+                    sh '''
+                        if [ "$(docker ps -a -q -f name=mysql_db)" ]; then
+                            echo "Removing existing mysql_db container..."
+                            docker rm -f mysql_db
+                        fi
 
-                     // Replace IMAGE_TAG placeholder in docker-compose.yml
-                     sh "sed -i 's|marwaniwael/gestion-ski:IMAGE_TAG|${dockerHubRepo}:${imageTag}|g' docker-compose.yml"
-                     sh "cat docker-compose.yml" // Optional: For debugging
+                        docker-compose down || true
+                    '''
 
+                    // Replace image tag in docker-compose and start app
+                    sh "sed -i 's|marwaniwael/gestion-ski:IMAGE_TAG|${dockerHubRepo}:${imageTag}|g' docker-compose.yml"
+                    sh "cat docker-compose.yml"
 
-                     // Run application with updated tag
-                     withEnv(["IMAGE_TAG=${imageTag}"]) {
-                         sh "IMAGE_TAG=${imageTag} docker-compose up -d"
-                     }
-                 }
-             }
-         }
-          stage("Run Prometheus") {
-                     steps {
-                         script {
-                             sh 'docker start prometheus || docker run -d --name prometheus prom/prometheus'
-                         }
-                     }
-                 }
+                    sh "IMAGE_TAG=${imageTag} docker-compose up -d"
+                }
+            }
+        }
 
-                 stage("Run Grafana") {
-                     steps {
-                         script {
-                             sh 'docker start grafana || docker run -d --name grafana grafana/grafana'
-                         }
-                     }
-                 }
+        stage("Run Prometheus") {
+            steps {
+                script {
+                    sh 'docker start prometheus || docker run -d --name prometheus -p 9090:9090 prom/prometheus'
+                }
+            }
+        }
 
+        stage("Run Grafana") {
+            steps {
+                script {
+                    sh 'docker start grafana || docker run -d --name grafana -p 3000:3000 grafana/grafana'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Build successful!'
+            echo '✅ Build successful!'
         }
         failure {
-            echo 'Build failed!'
+            echo '❌ Build failed!'
         }
     }
 }

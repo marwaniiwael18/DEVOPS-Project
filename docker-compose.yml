@@ -16,7 +16,7 @@ services:
       - spring_network
 
   spring_app:
-    image: marwaniwael/gestion-ski:${imageTag}  # From Docker Hub
+    image: marwaniwael/gestion-ski:IMAGE_TAG  # Placeholder, gets replaced in Jenkins
     container_name: spring_backend
     depends_on:
       - mysql_db
@@ -42,6 +42,3 @@ services:
 networks:
   spring_network:
     driver: bridge
-
-volumes:
-  nexus-data:  # Optional (you can remove if unused)
