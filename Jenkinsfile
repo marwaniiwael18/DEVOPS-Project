@@ -151,11 +151,7 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true,
-                // SMTP Settings through the Jenkins email extension settings
-                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-                defaultSubject: "Build ${BUILD_NUMBER} - ${currentBuild.currentResult}",
-                defaultContent: "Build Info:\nBuild URL: ${BUILD_URL}"
+                attachLog: true
             )
         }
 
@@ -186,14 +182,8 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true,
-                // SMTP Settings through the Jenkins email extension settings
-                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-                defaultSubject: "Build ${BUILD_NUMBER} - ${currentBuild.currentResult}",
-                defaultContent: "Build Info:\nBuild URL: ${BUILD_URL}"
+                attachLog: true
             )
         }
     }
-
-
 }
