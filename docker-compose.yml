@@ -45,24 +45,22 @@ services:
     restart: always
     ports:
       - "8081:8081"
-      - "8083:8083"  # This is correct for exposing the port
+      - "8083:8083"
     environment:
-      # Add this to ensure Nexus starts the Docker registry correctly
       NEXUS_SECURITY_RANDOMPASSWORD: "false"
     networks:
-      - devops-net  # Simplify the network definition
+      - devops-net
     volumes:
       - nexus-data:/nexus-data
+
 networks:
   devops-net:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.31.0.0/16  # changed from 172.20.0.0/16 to avoid overlap
   spring_network:
     driver: bridge
-
-
 
 volumes:
   nexus-data:
