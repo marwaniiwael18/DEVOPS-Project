@@ -20,31 +20,7 @@ pipeline {
             }
         }
 
-        stage('Wait for MySQL') {
-            steps {
-                script {
-                    echo "Checking MySQL connection..."
-                    def ready = false
-                    def attempts = 0
-                    while (!ready && attempts < 15) {
-                        try {
-                            sh '''
-                                mysql -h mysqldb -u root -proot -e 'SELECT 1;'
-                            '''
-                            ready = true
-                            echo "MySQL is ready!"
-                        } catch (exc) {
-                            attempts++
-                            echo "MySQL not ready yet (attempt ${attempts}/15), waiting..."
-                            sh 'sleep 5'
-                        }
-                    }
-                    if (!ready) {
-                        error "MySQL did not become available in time"
-                    }
-                }
-            }
-        }
+
 
         stage('Run Tests') {
             steps {
@@ -112,18 +88,43 @@ pipeline {
             }
         }
 
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            }
-        }
+         stage('Run Application') {
+             steps {
+                 script {
+                     // Pull image from Docker Hub
+                     sh "docker pull ${dockerHubRepo}:${imageTag}"
+
+                     // Replace IMAGE_TAG placeholder in docker-compose.yml
+                     sh "sed -i 's|marwaniwael/gestion-ski:IMAGE_TAG|${dockerHubRepo}:${imageTag}|g' docker-compose.yml"
+                     sh "cat docker-compose.yml" // Optional: For debugging
+
+
+                     // Run application with updated tag
+                     withEnv(["IMAGE_TAG=${imageTag}"]) {
+                         sh "IMAGE_TAG=${imageTag} docker-compose up -d"
+                     }
+                 }
+             }
+         }
+          stage("Run Prometheus") {
+                     steps {
+                         script {
+                             sh 'docker start prometheus || docker run -d --name prometheus prom/prometheus'
+                         }
+                     }
+                 }
+
+                 stage("Run Grafana") {
+                     steps {
+                         script {
+                             sh 'docker start grafana || docker run -d --name grafana grafana/grafana'
+                         }
+                     }
+                 }
+
     }
 
     post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            cleanWs()
-        }
         success {
             echo 'Build successful!'
         }
