@@ -58,6 +58,16 @@ pipeline {
             }
         }
 
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    docker.withRegistry("http://${registry}", registryCredentials) {
+                        sh "docker push --quiet $registry/$imageName:$imageTag"
+                    }
+                }
+            }
+        }
+
         stage('Run Application') {
             steps {
                 script {
