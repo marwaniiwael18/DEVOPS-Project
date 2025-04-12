@@ -71,8 +71,21 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    // You can run your application here
-                    sh 'mvn spring-boot:run'
+                    docker.withRegistry("http://${registry}", "${registryCredentials}") {
+                        sh "docker pull ${registry}/${imageName}:${imageTag}"
+
+                        // Replace old image reference with the current one
+                        sh "sed -i 's|localhost:8083/kenzabenslimane_4twin3_thunder_gestionski:IMAGE_TAG|${registry}/${imageName}:${imageTag}|g' docker-compose.yml"
+                        sh "cat docker-compose.yml"
+
+                        // Stop and remove existing containers
+                        sh "docker-compose down --remove-orphans"
+
+                        // Run the container with updated image tag
+                        withEnv(["IMAGE_TAG=${imageTag}"]) {
+                            sh "docker-compose up -d"
+                        }
+                    }
                 }
             }
         }
