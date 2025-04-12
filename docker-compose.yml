@@ -20,7 +20,7 @@ services:
       start_period: 30s
 
   spring_app:
-    image: localhost:8083/kenzabenslimane_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
+    image: 192.168.1.100:8083/kenzabenslimane_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
     container_name: back3
     depends_on:
       mysql_db2:
