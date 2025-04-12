@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        registryCredentials = "nexus"
-        registry = "localhost:8082"
+        registryCredentials = "nexus1"
+        registry = "localhost:8083"
         imageName = "kenzabenslimane_4twin3_thunder_gestionski"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
         gitBranch = "Kenza/TaskPist"
