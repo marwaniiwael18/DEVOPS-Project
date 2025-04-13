@@ -101,20 +101,17 @@ pipeline {
                    }
                }
 
-                    stage('Run Application') {
-                              steps {
-                                  script {
-                                      // Libère le port 8081 s’il est déjà utilisé
-                                      sh 'fuser -k 8081/tcp || true'
+                  stage('Run Application') {
+                      steps {
+                          script {
+                              sh 'fuser -k 8081/tcp || true'
+                              sh 'docker-compose down --remove-orphans || true'
 
-                                      // Arrêt des conteneurs existants et suppression des orphelins
-                                      sh 'docker-compose down --remove-orphans || true'
-
-                                      writeFile file: 'docker-compose.yml', text: """
+                              writeFile file: 'docker-compose.yml', text: """
                   version: '3.8'
                   services:
                     spring_backend:
-                      image: ${imageName}:${imageTag}
+                      image: "${imageName}:${imageTag}"
                       container_name: spring_backend
                       environment:
                         SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
@@ -139,10 +136,15 @@ pipeline {
                         retries: 3
                       restart: always
                   """
-                                      sh 'docker-compose up -d'
-                                  }
-                              }
+
+                              sh 'docker-compose up -d'
+
+                              // Optional: wait a bit and show container logs
+                              sh 'sleep 10 && docker ps'
                           }
+                      }
+                  }
+
     }
 
     post {
