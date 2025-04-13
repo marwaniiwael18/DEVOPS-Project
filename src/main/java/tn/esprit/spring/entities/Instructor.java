@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -13,7 +14,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level= AccessLevel.PRIVATE)
 @Entity
@@ -33,6 +33,32 @@ public class Instructor implements Serializable {
 
 	LocalDate dateOfHire;
 
+	@Email
+	String email;
+
+	String phone;
+
 	@OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL, orphanRemoval = true)
 	Set<Course> courses = new HashSet<>();
+	
+	// Constructor without email and phone - for backward compatibility with tests
+	public Instructor(Long numInstructor, String firstName, String lastName, LocalDate dateOfHire, Set<Course> courses) {
+		this.numInstructor = numInstructor;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.dateOfHire = dateOfHire;
+		this.courses = courses != null ? courses : new HashSet<>();
+	}
+	
+	// Full constructor
+	public Instructor(Long numInstructor, String firstName, String lastName, LocalDate dateOfHire, String email, 
+			String phone, Set<Course> courses) {
+		this.numInstructor = numInstructor;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.dateOfHire = dateOfHire;
+		this.email = email;
+		this.phone = phone;
+		this.courses = courses != null ? courses : new HashSet<>();
+	}
 }

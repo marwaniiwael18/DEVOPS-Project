@@ -8,11 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.dto.InstructorDTO;
 import tn.esprit.spring.entities.Instructor;
+import tn.esprit.spring.mappers.InstructorMapper;
 import tn.esprit.spring.services.IInstructorServices;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(name = "\uD83D\uDC69\u200D\uD83C\uDFEB Instructor Management")
 @RestController
@@ -21,24 +24,28 @@ import java.util.List;
 public class InstructorRestController {
 
     private final IInstructorServices instructorServices;
+    private final InstructorMapper instructorMapper;
     private static final Logger logger = LoggerFactory.getLogger(InstructorRestController.class);
 
     @Operation(description = "Add Instructor")
     @PostMapping("/add")
-    public Instructor addInstructor(@Valid @RequestBody Instructor instructor){
-        return instructorServices.addInstructor(instructor);
+    public InstructorDTO addInstructor(@Valid @RequestBody InstructorDTO instructorDTO){
+        Instructor instructor = instructorMapper.toEntity(instructorDTO);
+        Instructor savedInstructor = instructorServices.addInstructor(instructor);
+        return instructorMapper.toDTO(savedInstructor);
     }
     
     @Operation(description = "Add Instructor and Assign To Course")
     @PutMapping("/addAndAssignToCourse/{numCourse}")
-    public ResponseEntity<Instructor> addAndAssignToInstructor(@RequestBody Instructor instructor, @PathVariable("numCourse") String numCourse) {
+    public ResponseEntity<InstructorDTO> addAndAssignToInstructor(@RequestBody InstructorDTO instructorDTO, @PathVariable("numCourse") String numCourse) {
         try {
             Long courseId = Long.parseLong(numCourse);
+            Instructor instructor = instructorMapper.toEntity(instructorDTO);
             Instructor result = instructorServices.addInstructorAndAssignToCourse(instructor, courseId);
             if (result == null) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(instructorMapper.toDTO(result));
         } catch (NumberFormatException e) {
             logger.error("Invalid course ID format: {}", numCourse);
             return ResponseEntity.badRequest().build();
@@ -47,30 +54,33 @@ public class InstructorRestController {
     
     @Operation(description = "Retrieve all Instructors")
     @GetMapping("/all")
-    public List<Instructor> getAllInstructors(){
-        return instructorServices.retrieveAllInstructors();
+    public List<InstructorDTO> getAllInstructors(){
+        return instructorServices.retrieveAllInstructors().stream()
+                .map(instructorMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Operation(description = "Update Instructor ")
     @PutMapping("/update")
-    public ResponseEntity<Instructor> updateInstructor(@RequestBody Instructor instructor){
+    public ResponseEntity<InstructorDTO> updateInstructor(@Valid @RequestBody InstructorDTO instructorDTO){
+        Instructor instructor = instructorMapper.toEntity(instructorDTO);
         Instructor result = instructorServices.updateInstructor(instructor);
         if (result == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(instructorMapper.toDTO(result));
     }
 
     @Operation(description = "Retrieve Instructor by Id")
     @GetMapping("/get/{id-instructor}")
-    public ResponseEntity<Instructor> getById(@PathVariable("id-instructor") String numInstructor) {
+    public ResponseEntity<InstructorDTO> getById(@PathVariable("id-instructor") String numInstructor) {
         try {
             Long instructorId = Long.parseLong(numInstructor);
             Instructor instructor = instructorServices.retrieveInstructor(instructorId);
             if (instructor == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-            return ResponseEntity.ok(instructor);
+            return ResponseEntity.ok(instructorMapper.toDTO(instructor));
         } catch (NumberFormatException e) {
             logger.error("Invalid instructor ID format: {}", numInstructor);
             return ResponseEntity.badRequest().build();

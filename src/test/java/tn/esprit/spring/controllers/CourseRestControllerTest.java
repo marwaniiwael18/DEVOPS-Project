@@ -31,6 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 public class CourseRestControllerTest {
 
+    // Constants for API paths
+    private static final String API_COURSE_ADD = "/course/add";
+    private static final String API_COURSE_UPDATE = "/course/update";
+    private static final String API_COURSE_GET = "/course/get/{id}";
+    private static final String API_COURSE_ALL = "/course/all";
+    private static final String API_COURSE_DELETE = "/course/delete/{id}";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -51,7 +58,7 @@ public class CourseRestControllerTest {
     void testAddCourseSuccess() throws Exception {
         when(courseServices.addCourse(any(Course.class))).thenReturn(course);
 
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(API_COURSE_ADD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(course)))
                 .andExpect(status().isOk())
@@ -65,7 +72,7 @@ public class CourseRestControllerTest {
         Course invalidCourse = new Course();
         // Missing required fields
         
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(API_COURSE_ADD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidCourse)))
                 .andExpect(status().isBadRequest());
@@ -77,7 +84,7 @@ public class CourseRestControllerTest {
     void testAddCourseServiceThrowsException() throws Exception {
         when(courseServices.addCourse(any(Course.class))).thenThrow(RuntimeException.class);
         
-        mockMvc.perform(post("/course/add")
+        mockMvc.perform(post(API_COURSE_ADD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(course)))
                 .andExpect(status().is5xxServerError());
@@ -90,7 +97,7 @@ public class CourseRestControllerTest {
         Long courseId = 1L;
         when(courseServices.retrieveCourse(courseId)).thenReturn(course);
 
-        mockMvc.perform(get("/course/get/{id}", courseId)
+        mockMvc.perform(get(API_COURSE_GET, courseId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numCourse").value(course.getNumCourse()));
@@ -103,7 +110,7 @@ public class CourseRestControllerTest {
         Long nonExistentId = 99L;
         when(courseServices.retrieveCourse(nonExistentId)).thenReturn(null);
 
-        mockMvc.perform(get("/course/get/{id}", nonExistentId)
+        mockMvc.perform(get(API_COURSE_GET, nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -122,7 +129,7 @@ public class CourseRestControllerTest {
         List<Course> courses = Arrays.asList(course, createSampleCourse(2L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 150.0f, 2));
         when(courseServices.retrieveAllCourses()).thenReturn(courses);
 
-        mockMvc.perform(get("/course/all")
+        mockMvc.perform(get(API_COURSE_ALL)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(courses.size()));
@@ -134,7 +141,7 @@ public class CourseRestControllerTest {
     void testGetAllCoursesEmpty() throws Exception {
         when(courseServices.retrieveAllCourses()).thenReturn(Arrays.asList());
         
-        mockMvc.perform(get("/course/all")
+        mockMvc.perform(get(API_COURSE_ALL)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -147,7 +154,7 @@ public class CourseRestControllerTest {
         course.setPrice(200.0f);
         when(courseServices.updateCourse(any(Course.class))).thenReturn(course);
 
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(API_COURSE_UPDATE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(course)))
                 .andExpect(status().isOk())
@@ -161,7 +168,7 @@ public class CourseRestControllerTest {
         Course updatedCourse = createSampleCourse(2L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
         when(courseServices.updateCourse(any(Course.class))).thenReturn(null);
 
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(API_COURSE_UPDATE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedCourse)))
                 .andExpect(status().isNotFound());
@@ -173,7 +180,7 @@ public class CourseRestControllerTest {
         // Empty course with only ID
         invalidCourse.setNumCourse(1L);
         
-        mockMvc.perform(put("/course/update")
+        mockMvc.perform(put(API_COURSE_UPDATE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidCourse)))
                 .andExpect(status().isBadRequest());
@@ -187,7 +194,7 @@ public class CourseRestControllerTest {
         when(courseServices.retrieveCourse(courseId)).thenReturn(course);
         doNothing().when(courseServices).deleteCourse(courseId);
 
-        mockMvc.perform(delete("/course/delete/{id}", courseId))
+        mockMvc.perform(delete(API_COURSE_DELETE, courseId))
                 .andExpect(status().isNoContent()); // Vérifie 204 au lieu de 200
 
 
@@ -200,7 +207,7 @@ public class CourseRestControllerTest {
         Long nonExistentId = 99L;
         when(courseServices.retrieveCourse(nonExistentId)).thenReturn(null);
 
-        mockMvc.perform(delete("/course/delete/{id}", nonExistentId))
+        mockMvc.perform(delete(API_COURSE_DELETE, nonExistentId))
                 .andExpect(status().isNotFound());
     }
     

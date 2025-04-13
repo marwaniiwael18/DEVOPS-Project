@@ -39,20 +39,23 @@ class InstructorServicesImplTest {
     @InjectMocks
     private InstructorServicesImpl instructorService;
 
+    private Instructor testInstructor;
+
     @BeforeEach
     void setUp() {
         // Replace deprecated initMocks with openMocks
         MockitoAnnotations.openMocks(this);
+        
+        testInstructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
     }
 
     @Test
     void testAddInstructor() {
-        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
-        Instructor savedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor savedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
 
         when(instructorRepository.save(any(Instructor.class))).thenReturn(savedInstructor);
 
-        Instructor result = instructorService.addInstructor(instructor);
+        Instructor result = instructorService.addInstructor(testInstructor);
 
         assertNotNull(result);
         assertEquals(1L, result.getNumInstructor());
@@ -62,8 +65,8 @@ class InstructorServicesImplTest {
     @Test
     void testRetrieveAllInstructors() {
         List<Instructor> instructors = Arrays.asList(
-                new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>()),
-                new Instructor(2L, "Jane", "Smith", LocalDate.of(2021, 5, 10), new HashSet<>())
+                new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>()),
+                new Instructor(2L, "Jane", "Smith", LocalDate.of(2021, 5, 10), null, null, new HashSet<>())
         );
 
         when(instructorRepository.findAll()).thenReturn(instructors);
@@ -77,7 +80,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testRetrieveInstructorFound() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(instructor));
 
         Instructor retrievedInstructor = instructorService.retrieveInstructor(1L);
@@ -99,8 +102,8 @@ class InstructorServicesImplTest {
 
     @Test
     void testUpdateInstructor() {
-        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
-        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
+        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
+        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, null, null, new HashSet<>());
 
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(existingInstructor));
         when(instructorRepository.save(any(Instructor.class))).thenReturn(updatedInstructor);
@@ -116,7 +119,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testUpdateInstructorNotFound() {
-        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
+        Instructor updatedInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, null, null, new HashSet<>());
         when(instructorRepository.findById(1L)).thenReturn(Optional.empty());
 
         Instructor result = instructorService.updateInstructor(updatedInstructor);
@@ -128,7 +131,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourse() {
-        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), new HashSet<>());
+        Instructor instructor = new Instructor(1L, "John", "Doe", LocalDate.of(2022, 1, 1), null, null, new HashSet<>());
         Course course = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
@@ -144,7 +147,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseNotFound() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 99L);
@@ -156,7 +159,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseInstructorAlreadyHasCourses() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
         Course existingCourse = new Course(2L, 3, null, null, 120.0f, 5, null);
         Course newCourse = new Course(1L, 3, null, null, 120.0f, 5, null);
 
@@ -175,7 +178,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorWithNullValues() {
-        Instructor instructor = new Instructor(null, null, null, null, null);
+        Instructor instructor = new Instructor(null, null, null, null, null, null, null);
 
         when(instructorRepository.save(any(Instructor.class))).thenReturn(instructor);
 
@@ -189,8 +192,8 @@ class InstructorServicesImplTest {
 
     @Test
     void testUpdateInstructorWithNullValues() {
-        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
-        Instructor updatedInstructor = new Instructor(1L, null, null, null, null);
+        Instructor existingInstructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
+        Instructor updatedInstructor = new Instructor(1L, null, null, null, null, null, null);
 
         when(instructorRepository.findById(1L)).thenReturn(Optional.of(existingInstructor));
         when(instructorRepository.save(any(Instructor.class))).thenReturn(updatedInstructor);
@@ -214,7 +217,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseWithMaxCourses() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
         Course course1 = new Course(1L, 3, null, null, 120.0f, 5, null);
         Course course2 = new Course(2L, 3, null, null, 120.0f, 5, null);
         Course course3 = new Course(3L, 3, null, null, 120.0f, 5, null);
@@ -235,7 +238,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseWithNullCourses() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null);
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, null);
         Course course = new Course(1L, 3, null, null, 120.0f, 5, null);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
@@ -251,7 +254,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseCourseNotFound() {
-        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(null, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
 
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -265,7 +268,7 @@ class InstructorServicesImplTest {
     @Test
     void testAddInstructorAndAssignToCourseWithExistingCourses() {
         Course existingCourse = new Course(2L, 4, null, null, 150.0f, 10, null);
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>(Collections.singleton(existingCourse)));
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>(Collections.singleton(existingCourse)));
         Course newCourse = new Course(1L, 3, null, null, 120.0f, 5, null);
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(newCourse));
@@ -325,7 +328,7 @@ class InstructorServicesImplTest {
 
     @Test
     void testAddInstructorAndAssignToCourseWithTooManyCourses() {
-        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, null, null, new HashSet<>());
 
         // Add 10 courses to simulate max capacity
         for (int i = 1; i <= 10; i++) {
@@ -361,7 +364,7 @@ class InstructorServicesImplTest {
     @Test
     void testUpdateInstructorWithMismatchedId() {
         // Try to update with instructor that has ID 2
-        Instructor updatedInstructor = new Instructor(2L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
+        Instructor updatedInstructor = new Instructor(2L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, null, null, new HashSet<>());
 
         when(instructorRepository.findById(2L)).thenReturn(Optional.empty());
 

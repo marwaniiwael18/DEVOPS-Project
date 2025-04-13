@@ -42,26 +42,26 @@ class SkierServicesImplTest {
     @InjectMocks
     private SkierServicesImpl skierServices;
 
-    private Skier skier;
-    private Piste piste;
-    private Course course;
-    private Subscription subscription;
+    private Skier testSkier;
+    private Piste testPiste;
+    private Course testCourse;
+    private Subscription testSubscription;
 
     @BeforeEach
     void setUp() {
-        skier = createTestSkier();
-        piste = createTestPiste();
-        course = createTestCourse();
-        subscription = createTestSubscription();
+        testSkier = createTestSkier();
+        testPiste = createTestPiste();
+        testCourse = createTestCourse();
+        testSubscription = createTestSubscription();
     }
 
     @Test
     void testAddSkier() {
         // Set subscription for skier to avoid NullPointerException
-        skier.setSubscription(subscription);
-        when(skierRepository.save(any(Skier.class))).thenReturn(skier);
+        testSkier.setSubscription(testSubscription);
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
 
-        Skier savedSkier = skierServices.addSkier(skier);
+        Skier savedSkier = skierServices.addSkier(testSkier);
 
         assertNotNull(savedSkier);
         assertEquals(1L, savedSkier.getNumSkier());
@@ -73,7 +73,7 @@ class SkierServicesImplTest {
         Skier updatedSkier = createTestSkier();
         updatedSkier.setFirstName("UpdatedName");
 
-        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skier));
+        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(skierRepository.save(any(Skier.class))).thenReturn(updatedSkier);
 
         Skier result = skierServices.updateSkier(updatedSkier);
@@ -86,9 +86,9 @@ class SkierServicesImplTest {
 
     @Test
     void testAssignSkierToPiste() {
-        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skier));
-        when(pisteRepository.findById(anyLong())).thenReturn(Optional.of(piste));
-        when(skierRepository.save(any(Skier.class))).thenReturn(skier);
+        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
+        when(pisteRepository.findById(anyLong())).thenReturn(Optional.of(testPiste));
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
 
         Skier result = skierServices.assignSkierToPiste(1L, 1L);
 
@@ -96,37 +96,37 @@ class SkierServicesImplTest {
         assertNotNull(result.getPistes());
         verify(skierRepository, times(1)).findById(1L);
         verify(pisteRepository, times(1)).findById(1L);
-        verify(skierRepository, times(1)).save(skier);
+        verify(skierRepository, times(1)).save(testSkier);
     }
 
     @Test
     void testAssignSkierToSubscription() {
-        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skier));
-        when(subscriptionRepository.findById(anyLong())).thenReturn(Optional.of(subscription));
-        when(skierRepository.save(any(Skier.class))).thenReturn(skier);
+        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
+        when(subscriptionRepository.findById(anyLong())).thenReturn(Optional.of(testSubscription));
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
 
         Skier result = skierServices.assignSkierToSubscription(1L, 1L);
 
         assertNotNull(result);
         assertNotNull(result.getSubscription());
-        assertEquals(subscription, result.getSubscription());
+        assertEquals(testSubscription, result.getSubscription());
         verify(skierRepository, times(1)).findById(1L);
         verify(subscriptionRepository, times(1)).findById(1L);
-        verify(skierRepository, times(1)).save(skier);
+        verify(skierRepository, times(1)).save(testSkier);
     }
 
     @Test
     void testAddSkierAndAssignToCourse() {
         Registration registration = new Registration();
-        registration.setCourse(course);
-        registration.setSkier(skier);
+        registration.setCourse(testCourse);
+        registration.setSkier(testSkier);
         registration.setNumWeek(1);
 
         // Change from findById to getById to match the service implementation
-        when(courseRepository.getById(anyLong())).thenReturn(course);
-        when(skierRepository.save(any(Skier.class))).thenReturn(skier);
+        when(courseRepository.getById(anyLong())).thenReturn(testCourse);
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
 
-        Skier result = skierServices.addSkierAndAssignToCourse(skier, 1L);
+        Skier result = skierServices.addSkierAndAssignToCourse(testSkier, 1L);
 
         assertNotNull(result);
         verify(courseRepository, times(1)).getById(1L);
@@ -135,7 +135,7 @@ class SkierServicesImplTest {
     
     @Test
     void testRetrieveSkier() {
-        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skier));
+        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
 
         Skier result = skierServices.retrieveSkier(1L);
 
@@ -156,7 +156,7 @@ class SkierServicesImplTest {
 
     @Test
     void testRetrieveSkiersBySubscriptionType() {
-        List<Skier> skiers = Collections.singletonList(skier);
+        List<Skier> skiers = Collections.singletonList(testSkier);
         when(skierRepository.findBySubscription_TypeSub(any(TypeSubscription.class))).thenReturn(skiers);
 
         List<Skier> result = skierServices.retrieveSkiersBySubscriptionType(TypeSubscription.ANNUAL);
@@ -168,7 +168,7 @@ class SkierServicesImplTest {
 
     @Test
     void testRetrieveAllSkiers() {
-        List<Skier> skiers = Arrays.asList(skier, new Skier(2L, "Jane"));
+        List<Skier> skiers = Arrays.asList(testSkier, new Skier(2L, "Jane"));
         when(skierRepository.findAll()).thenReturn(skiers);
 
         List<Skier> result = skierServices.retrieveAllSkiers();
@@ -181,57 +181,57 @@ class SkierServicesImplTest {
     @Test
     void testSubscriptionEndDateCalculationForSemiAnnual() {
         // Create test data
-        Skier skierWithSub = createTestSkier();
+        Skier testSkierWithSub = createTestSkier();
         Subscription semAnnualSub = createTestSubscription();
         semAnnualSub.setTypeSub(TypeSubscription.SEMESTRIEL);
         semAnnualSub.setStartDate(LocalDate.of(2023, 1, 1));
-        skierWithSub.setSubscription(semAnnualSub);
+        testSkierWithSub.setSubscription(semAnnualSub);
         
         // Remove unnecessary stub
-        when(skierRepository.save(any(Skier.class))).thenReturn(skierWithSub);
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkierWithSub);
         
         // Trigger the method that would calculate the end date
-        skierServices.addSkier(skierWithSub);
+        skierServices.addSkier(testSkierWithSub);
         
         // Verify that end date is calculated correctly (6 months from start date)
-        assertEquals(LocalDate.of(2023, 7, 1), skierWithSub.getSubscription().getEndDate());
+        assertEquals(LocalDate.of(2023, 7, 1), testSkierWithSub.getSubscription().getEndDate());
     }
     
     @Test
     void testSubscriptionEndDateCalculationForMonthly() {
         // Create test data
-        Skier skierWithSub = createTestSkier();
+        Skier testSkierWithSub = createTestSkier();
         Subscription monthlySub = createTestSubscription();
         monthlySub.setTypeSub(TypeSubscription.MONTHLY);
         monthlySub.setStartDate(LocalDate.of(2023, 1, 1));
-        skierWithSub.setSubscription(monthlySub);
+        testSkierWithSub.setSubscription(monthlySub);
         
         // Remove unnecessary stub
-        when(skierRepository.save(any(Skier.class))).thenReturn(skierWithSub);
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkierWithSub);
         
         // Trigger the method that would calculate the end date
-        skierServices.addSkier(skierWithSub);
+        skierServices.addSkier(testSkierWithSub);
         
         // Verify that end date is calculated correctly (1 month from start date)
-        assertEquals(LocalDate.of(2023, 2, 1), skierWithSub.getSubscription().getEndDate());
+        assertEquals(LocalDate.of(2023, 2, 1), testSkierWithSub.getSubscription().getEndDate());
     }
     
     @Test
     void testSubscriptionEndDateCalculationForAnnual() {
         // Create test data
-        Skier skierWithSub = createTestSkier();
+        Skier testSkierWithSub = createTestSkier();
         Subscription annualSub = createTestSubscription();
         annualSub.setTypeSub(TypeSubscription.ANNUAL);
         annualSub.setStartDate(LocalDate.of(2023, 1, 1));
-        skierWithSub.setSubscription(annualSub);
+        testSkierWithSub.setSubscription(annualSub);
         
-        when(skierRepository.save(any(Skier.class))).thenReturn(skierWithSub);
+        when(skierRepository.save(any(Skier.class))).thenReturn(testSkierWithSub);
         
         // Trigger the method that would calculate the end date
-        skierServices.addSkier(skierWithSub);
+        skierServices.addSkier(testSkierWithSub);
         
         // Verify that end date is calculated correctly (1 year from start date)
-        assertEquals(LocalDate.of(2024, 1, 1), skierWithSub.getSubscription().getEndDate());
+        assertEquals(LocalDate.of(2024, 1, 1), testSkierWithSub.getSubscription().getEndDate());
     }
     
     @Test
@@ -250,7 +250,7 @@ class SkierServicesImplTest {
     void testAssignSkierToSubscriptionReturnsNullWhenSkierNotFound() {
         // Setup - skier not found
         when(skierRepository.findById(999L)).thenReturn(Optional.empty());
-        when(subscriptionRepository.findById(anyLong())).thenReturn(Optional.of(subscription));
+        when(subscriptionRepository.findById(anyLong())).thenReturn(Optional.of(testSubscription));
         
         // Act
         Skier result = skierServices.assignSkierToSubscription(999L, 1L);
@@ -266,7 +266,7 @@ class SkierServicesImplTest {
     @Test
     void testAssignSkierToSubscriptionReturnsNullWhenSubscriptionNotFound() {
         // Setup - subscription not found
-        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skier));
+        when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(subscriptionRepository.findById(999L)).thenReturn(Optional.empty());
         
         // Act

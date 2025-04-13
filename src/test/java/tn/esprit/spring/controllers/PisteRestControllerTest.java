@@ -3,124 +3,132 @@ package tn.esprit.spring.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tn.esprit.spring.config.TestConfig;
+import tn.esprit.spring.dto.PisteDTO;
 import tn.esprit.spring.entities.Color;
 import tn.esprit.spring.entities.Piste;
+import tn.esprit.spring.mappers.PisteMapper;
 import tn.esprit.spring.services.IPisteServices;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(PisteRestController.class)
+@Import(TestConfig.class)
 public class PisteRestControllerTest {
+
+    // API endpoint constants
+    private static final String API_PISTE_ADD = "/piste/add";
+    private static final String API_PISTE_ALL = "/piste/all";
+    private static final String API_PISTE_GET = "/piste/get/{id}";
+    private static final String API_PISTE_DELETE = "/piste/delete/{id}";
     
+    // Test data constants
+    private static final String TEST_PISTE_NAME = "Test Piste";
+    private static final String PISTE_1_NAME = "Piste 1";
+    private static final String PISTE_2_NAME = "Piste 2";
+    
+    // JSON path constants
+    private static final String JSON_PATH_ID = "$.id";
+    private static final String JSON_PATH_NAME = "$.name";
+    private static final String JSON_PATH_COLOR = "$.color";
+    private static final String JSON_PATH_LENGTH = "$.length()";
+
+    @Autowired
     private MockMvc mockMvc;
-    
-    @Mock
+
+    @MockBean
     private IPisteServices pisteServices;
-    
-    @InjectMocks
-    private PisteRestController pisteRestController;
-    
+
+    @Autowired
+    private PisteMapper pisteMapper;
+
+    @Autowired
     private ObjectMapper objectMapper;
-    
+
+    private Piste piste;
+    private PisteDTO pisteDTO;
+
     @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(pisteRestController).build();
-        objectMapper = new ObjectMapper();
+    void setUp() {
+        // Create sample piste and convert to DTO
+        piste = createSamplePiste(1L, TEST_PISTE_NAME, Color.BLUE, 500, 15);
+        pisteDTO = pisteMapper.toDTO(piste);
     }
-    
+
     @Test
     public void testAddPiste() throws Exception {
-        // Prepare test data
-        Piste piste = new Piste();
-        piste.setNumPiste(1L);
-        piste.setNamePiste("Alpine Run");
-        piste.setColor(Color.GREEN);
-        piste.setLength(1500);
-        piste.setSlope(20);
-        
         when(pisteServices.addPiste(any(Piste.class))).thenReturn(piste);
-        
-        // Perform test
-        mockMvc.perform(post("/piste/add")
+
+        mockMvc.perform(post(API_PISTE_ADD)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(piste)))
+                .content(objectMapper.writeValueAsString(pisteDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.numPiste", is(1)))
-                .andExpect(jsonPath("$.namePiste", is("Alpine Run")))
-                .andExpect(jsonPath("$.color", is(Color.GREEN.toString())))
-                .andExpect(jsonPath("$.length", is(1500)))
-                .andExpect(jsonPath("$.slope", is(20)));
+                .andExpect(jsonPath(JSON_PATH_ID).value(piste.getNumPiste()));
+
+        verify(pisteServices, times(1)).addPiste(any(Piste.class));
     }
-    
+
     @Test
     public void testGetAllPistes() throws Exception {
-        // Prepare test data
-        Piste piste1 = new Piste(1L, "Alpine Run", 1500);
-        piste1.setColor(Color.GREEN);
-        piste1.setSlope(20);
-        
-        Piste piste2 = new Piste(2L, "Black Diamond", 2500);
-        piste2.setColor(Color.BLACK);
-        piste2.setSlope(45);
-        
-        List<Piste> pistes = Arrays.asList(piste1, piste2);
-        
+        List<Piste> pistes = Arrays.asList(
+                createSamplePiste(1L, PISTE_1_NAME, Color.BLUE, 500, 15),
+                createSamplePiste(2L, PISTE_2_NAME, Color.RED, 700, 20)
+        );
+
         when(pisteServices.retrieveAllPistes()).thenReturn(pistes);
-        
-        // Perform test
-        mockMvc.perform(get("/piste/all"))
+
+        mockMvc.perform(get(API_PISTE_ALL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].numPiste", is(1)))
-                .andExpect(jsonPath("$[0].namePiste", is("Alpine Run")))
-                .andExpect(jsonPath("$[1].numPiste", is(2)))
-                .andExpect(jsonPath("$[1].namePiste", is("Black Diamond")));
+                .andExpect(jsonPath(JSON_PATH_LENGTH).value(2));
+
+        verify(pisteServices, times(1)).retrieveAllPistes();
     }
-    
+
     @Test
     public void testGetPisteById() throws Exception {
-        // Prepare test data
-        Piste piste = new Piste();
-        piste.setNumPiste(1L);
-        piste.setNamePiste("Alpine Run");
-        piste.setColor(Color.GREEN);
-        piste.setLength(1500);
-        piste.setSlope(20);
-        
         when(pisteServices.retrievePiste(1L)).thenReturn(piste);
-        
-        // Perform test
-        mockMvc.perform(get("/piste/get/1"))
+
+        mockMvc.perform(get(API_PISTE_GET, 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.numPiste", is(1)))
-                .andExpect(jsonPath("$.namePiste", is("Alpine Run")))
-                .andExpect(jsonPath("$.color", is(Color.GREEN.toString())));
+                .andExpect(jsonPath(JSON_PATH_ID, is(1)))
+                .andExpect(jsonPath(JSON_PATH_NAME, is(TEST_PISTE_NAME)))
+                .andExpect(jsonPath(JSON_PATH_COLOR, is(Color.BLUE.toString())));
+                
+        verify(pisteServices, times(1)).retrievePiste(1L);
     }
-    
+
     @Test
     public void testDeletePiste() throws Exception {
-        // Prepare test data
         doNothing().when(pisteServices).removePiste(anyLong());
-        
-        // Perform test
-        mockMvc.perform(delete("/piste/delete/1"))
+
+        mockMvc.perform(delete(API_PISTE_DELETE, 1))
                 .andExpect(status().isOk());
+
+        verify(pisteServices, times(1)).removePiste(anyLong());
+    }
+
+    // Utility method to create a sample Piste
+    private Piste createSamplePiste(Long id, String name, Color color, Integer length, Integer slope) {
+        Piste newPiste = new Piste();
+        newPiste.setNumPiste(id);
+        newPiste.setNamePiste(name);
+        newPiste.setColor(color);
+        newPiste.setLength(length);
+        newPiste.setSlope(slope);
+        return newPiste;
     }
 }

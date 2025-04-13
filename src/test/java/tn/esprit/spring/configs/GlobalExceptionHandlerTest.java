@@ -17,6 +17,8 @@ import static org.mockito.Mockito.when;
 class GlobalExceptionHandlerTest {
 
     private GlobalExceptionHandler exceptionHandler;
+    private static final String MESSAGE_KEY = "message";
+    private static final String STATUS_KEY = "status";
 
     @BeforeEach
     void setUp() {
@@ -59,8 +61,8 @@ class GlobalExceptionHandlerTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertNotNull(responseBody);
-        assertEquals("An unexpected error occurred", responseBody.get("message"));
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseBody.get("status"));
+        assertEquals("An unexpected error occurred", responseBody.get(MESSAGE_KEY));
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseBody.get(STATUS_KEY));
     }
 
     @Test
@@ -77,7 +79,7 @@ class GlobalExceptionHandlerTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
         assertNotNull(responseBody);
-        assertEquals("Validation failed", responseBody.get("message"));
-        assertEquals(HttpStatus.BAD_REQUEST.value(), responseBody.get("status"));
+        assertEquals("Validation failed", responseBody.get(MESSAGE_KEY));
+        assertEquals(HttpStatus.BAD_REQUEST.value(), responseBody.get(STATUS_KEY));
     }
 }

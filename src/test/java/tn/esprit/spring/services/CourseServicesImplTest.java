@@ -31,12 +31,12 @@ class CourseServicesImplTest {
     @InjectMocks
     private CourseServicesImpl courseService;
 
-    private Course course;
+    private Course testCourse;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        course = new Course(1L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 120.0f, 5, null);
+        testCourse = new Course(1L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 120.0f, 5, null);
     }
 
     @Test
@@ -70,7 +70,7 @@ class CourseServicesImplTest {
 
     @Test
     void testRetrieveCourseFound() {
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(testCourse));
 
         Course retrievedCourse = courseService.retrieveCourse(1L);
 
@@ -103,16 +103,16 @@ class CourseServicesImplTest {
     @Test
     void testAddCourse() {
         // Setup
-        when(courseRepository.save(any(Course.class))).thenReturn(course);
+        when(courseRepository.save(any(Course.class))).thenReturn(testCourse);
 
         // Execute
-        Course result = courseService.addCourse(course);
+        Course result = courseService.addCourse(testCourse);
 
         // Verify
         assertNotNull(result);
         assertEquals(1L, result.getNumCourse());
         assertEquals(TypeCourse.COLLECTIVE_ADULT, result.getTypeCourse());
-        verify(courseRepository, times(1)).save(course);
+        verify(courseRepository, times(1)).save(testCourse);
     }
 
     @Test
@@ -150,7 +150,7 @@ class CourseServicesImplTest {
     void testUpdateCourse() {
         // Setup
         Course updatedCourse = new Course(1L, 5, TypeCourse.INDIVIDUAL, Support.SNOWBOARD, 150.0f, 8, null);
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(testCourse));
         when(courseRepository.save(any(Course.class))).thenReturn(updatedCourse);
 
         // Execute
@@ -170,7 +170,7 @@ class CourseServicesImplTest {
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // Execute
-        Course result = courseService.updateCourse(course);
+        Course result = courseService.updateCourse(testCourse);
 
         // Verify
         assertNull(result);
