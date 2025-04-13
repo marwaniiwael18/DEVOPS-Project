@@ -34,7 +34,7 @@ public class Instructor implements Serializable {
 
 	@OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
 	@JsonIgnore
-	Set<Course> courses = new HashSet<>();
+	private Set<Course> courses = new HashSet<>(); // Made private
 
 	// Utility method to manage bidirectional relationship
 	public void addCourse(Course course) {
