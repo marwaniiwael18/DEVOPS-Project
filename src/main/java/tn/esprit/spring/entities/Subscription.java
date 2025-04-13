@@ -16,8 +16,13 @@ public class Subscription implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long numSub;
 
+	@Column(nullable = false)
 	private LocalDate startDate;
+
+	@Column(nullable = false)
 	private LocalDate endDate;
+
+	@Column(nullable = false)
 	private Float price;
 
 	@Enumerated(EnumType.STRING)
