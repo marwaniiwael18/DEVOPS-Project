@@ -1,46 +1,44 @@
 version: '3.8'
 
 services:
-  mysql_db2:
-    image: mysql:8.0
-    container_name: mysql_db2
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: stationSki
-
-    ports:
-      - "3307:3306"
-    networks:
-      - spring_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-
   spring_app:
-    image: 10.0.2.15:8083/yassinemanai_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
-    container_name: backend
-    depends_on:
-      mysql_db2:
-        condition: service_healthy  # Attend que MySQL soit prêt
+    image: YassineManai/gestion-ski:IMAGE_TAG
+    container_name: spring_backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
+      # H2 Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: TestDbStrongP@ss123
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.H2Dialect
+
+      # H2 Console Configuration
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      SPRING_H2_CONSOLE_PATH: /h2-console
+      SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS: "true"
+
+      # JPA Configuration
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
       SPRING_JPA_OPEN_IN_VIEW: "false"
+
+      # Server Configuration
+      SERVER_PORT: 8081
+
+      # Logging Configuration
+      LOGGING_LEVEL_ROOT: info
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
+      LOGGING_LEVEL_TN_ESPRIT_SPRING: DEBUG
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
+
+      # Time Zone
       TZ: Africa/Tunis
     ports:
-      - "8087:8087"
-      - "8089:8089"
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: always
-    networks:
-      - spring_network
-
-networks:
-  spring_network:
-    driver: bridge
