@@ -23,7 +23,7 @@ services:
       SPRING_JPA_OPEN_IN_VIEW: "false"
 
       # Server Configuration
-      SERVER_PORT: 8080
+      SERVER_PORT: 8081
 
       # Logging Configuration
       LOGGING_LEVEL_ROOT: info
@@ -34,9 +34,9 @@ services:
       # Time Zone
       TZ: Africa/Tunis
     ports:
-      - "8080:8080"
+      - "8081:8081"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
