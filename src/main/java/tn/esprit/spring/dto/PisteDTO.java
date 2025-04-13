@@ -14,8 +14,9 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PisteDTO {
+
     private Long id;
-    
+
     @NotBlank(message = "Name is required")
     @Size(max = 50, message = "Name cannot exceed 50 characters")
     private String name;
@@ -28,4 +29,12 @@ public class PisteDTO {
     
     @Positive(message = "Slope must be positive")
     private Integer slope;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

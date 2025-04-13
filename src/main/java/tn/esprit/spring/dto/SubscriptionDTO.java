@@ -13,16 +13,32 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionDTO {
-    private Long numSub;
     
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
-    
-    private LocalDate endDate;
     
     @Positive(message = "Price must be positive")
     private Float price;
     
     @NotNull(message = "Subscription type is required")
     private TypeSubscription typeSub;
+
+    private Long numSub;
+    private LocalDate endDate;
+
+    public Long getNumSub() {
+        return numSub;
+    }
+
+    public void setNumSub(Long numSub) {
+        this.numSub = numSub;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
 }

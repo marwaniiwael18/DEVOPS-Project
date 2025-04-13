@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PisteServicesImplTest {
+    private static final String PISTE_A_NAME = "Piste A";
     
     @Mock
     private IPisteRepository pisteRepository;
@@ -33,7 +34,7 @@ public class PisteServicesImplTest {
     public void setup() {
         piste1 = new Piste();
         piste1.setNumPiste(1L);
-        piste1.setNamePiste("Piste A");
+        piste1.setNamePiste(PISTE_A_NAME);
         piste1.setLength(1000);
         piste1.setSlope(20);
         piste1.setColor(Color.RED);
@@ -57,7 +58,7 @@ public class PisteServicesImplTest {
         
         // Then
         assertEquals(2, result.size());
-        assertEquals("Piste A", result.get(0).getNamePiste());
+        assertEquals(PISTE_A_NAME, result.get(0).getNamePiste());
         assertEquals("Piste B", result.get(1).getNamePiste());
         verify(pisteRepository, times(1)).findAll();
     }
@@ -73,7 +74,7 @@ public class PisteServicesImplTest {
         // Then
         assertNotNull(savedPiste);
         assertEquals(1L, savedPiste.getNumPiste());
-        assertEquals("Piste A", savedPiste.getNamePiste());
+        assertEquals(PISTE_A_NAME, savedPiste.getNamePiste());
         assertEquals(1000, savedPiste.getLength());
         assertEquals(20, savedPiste.getSlope());
         assertEquals(Color.RED, savedPiste.getColor());
@@ -94,7 +95,7 @@ public class PisteServicesImplTest {
     }
     
     @Test
-    public void testRetrievePiste_Found() {
+    public void testRetrievePisteFound() {
         // Given
         Long numPiste = 1L;
         when(pisteRepository.findById(numPiste)).thenReturn(Optional.of(piste1));
@@ -104,13 +105,13 @@ public class PisteServicesImplTest {
         
         // Then
         assertNotNull(foundPiste);
-        assertEquals("Piste A", foundPiste.getNamePiste());
+        assertEquals(PISTE_A_NAME, foundPiste.getNamePiste());
         assertEquals(Color.RED, foundPiste.getColor());
         verify(pisteRepository, times(1)).findById(numPiste);
     }
     
     @Test
-    public void testRetrievePiste_NotFound() {
+    public void testRetrievePisteNotFound() {
         // Given
         Long numPiste = 3L;
         when(pisteRepository.findById(numPiste)).thenReturn(Optional.empty());

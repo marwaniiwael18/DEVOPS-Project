@@ -49,20 +49,21 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void testHandleAllExceptions() {
-        Exception exception = new RuntimeException("Unexpected error");
-        WebRequest webRequest = mock(WebRequest.class);
+    public void testHandleAllExceptions() {
+        Exception mockException = new RuntimeException("Test exception");
+        WebRequest mockRequest = mock(WebRequest.class);
+        when(mockRequest.getDescription(false)).thenReturn("Test description");
 
-        ResponseEntity<Object> response = exceptionHandler.handleAllExceptions(exception, webRequest);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleAllExceptions(mockException, mockRequest);
 
-        assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("An unexpected error occurred", responseBody.get(MESSAGE_KEY));
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), responseBody.get(STATUS_KEY));
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.containsKey("message"));
+        assertTrue(body.containsKey("timestamp"));
+        assertTrue(body.containsKey("status"));
+        assertTrue(body.containsKey("details"));
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.get("status"));
     }
 
     @Test

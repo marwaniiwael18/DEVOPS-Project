@@ -65,7 +65,7 @@ class SubscriptionServicesImplTest {
     }
 
     @Test
-    void testAddSubscription_Annual() {
+    void testAddSubscriptionAnnual() {
         // Setup
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(annualSubscription);
 
@@ -79,7 +79,7 @@ class SubscriptionServicesImplTest {
     }
 
     @Test
-    void testAddSubscription_Monthly() {
+    void testAddSubscriptionMonthly() {
         // Setup
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(monthlySubscription);
 
@@ -93,7 +93,7 @@ class SubscriptionServicesImplTest {
     }
 
     @Test
-    void testAddSubscription_Semestrial() {
+    void testAddSubscriptionSemestrial() {
         // Setup
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(semestrialSubscription);
 
@@ -126,7 +126,7 @@ class SubscriptionServicesImplTest {
     }
 
     @Test
-    void testRetrieveSubscriptionById_Found() {
+    void testRetrieveSubscriptionByIdFound() {
         // Setup
         when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(annualSubscription));
 
@@ -140,7 +140,7 @@ class SubscriptionServicesImplTest {
     }
 
     @Test
-    void testRetrieveSubscriptionById_NotFound() {
+    void testRetrieveSubscriptionByIdNotFound() {
         // Setup
         when(subscriptionRepository.findById(anyLong())).thenReturn(Optional.empty());
 

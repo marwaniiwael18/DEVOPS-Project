@@ -75,7 +75,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkier_SkierNotFound() {
+    void testAddRegistrationAndAssignToSkierSkierNotFound() {
         // Setup
         when(skierRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -102,7 +102,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAssignRegistrationToCourse_RegistrationNotFound() {
+    void testAssignRegistrationToCourseRegistrationNotFound() {
         // Setup
         when(registrationRepository.findById(anyLong())).thenReturn(Optional.empty());
         when(courseRepository.findById(anyLong())).thenReturn(Optional.of(testCourse));
@@ -115,7 +115,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAssignRegistrationToCourse_CourseNotFound() {
+    void testAssignRegistrationToCourseCourseNotFound() {
         // Setup
         when(registrationRepository.findById(anyLong())).thenReturn(Optional.of(testRegistration));
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
@@ -128,7 +128,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_Success() {
+    void testAddRegistrationAndAssignToSkierAndCourseSuccess() {
         // Setup - Adult registering for adult course
         when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(courseRepository.findById(anyLong())).thenReturn(Optional.of(testCourse));
@@ -146,7 +146,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_AlreadyRegistered() {
+    void testAddRegistrationAndAssignToSkierAndCourseAlreadyRegistered() {
         // Setup - Already registered for this course and week
         when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(courseRepository.findById(anyLong())).thenReturn(Optional.of(testCourse));
@@ -160,7 +160,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_CourseFull() {
+    void testAddRegistrationAndAssignToSkierAndCourseCourseFull() {
         // Setup - Course is full (6 registrations)
         when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(courseRepository.findById(anyLong())).thenReturn(Optional.of(testCourse));
@@ -175,7 +175,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_AgeRestrictionForChildCourse() {
+    void testAddRegistrationAndAssignToSkierAndCourseAgeRestrictionForChildCourse() {
         // Setup - Adult trying to register for children's course
         Course childCourse = new Course();
         childCourse.setNumCourse(2L);
@@ -193,7 +193,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_SkierNotFound() {
+    void testAddRegistrationAndAssignToSkierAndCourseSkierNotFound() {
         // Setup
         when(skierRepository.findById(anyLong())).thenReturn(Optional.empty());
         when(courseRepository.findById(anyLong())).thenReturn(Optional.of(testCourse));
@@ -206,7 +206,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_CourseNotFound() {
+    void testAddRegistrationAndAssignToSkierAndCourseCourseNotFound() {
         // Setup
         when(skierRepository.findById(anyLong())).thenReturn(Optional.of(testSkier));
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
@@ -219,7 +219,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_ChildForChildCourse_Success() {
+    void testAddRegistrationAndAssignToSkierAndCourseChildForChildCourseSuccess() {
         // Setup - Child registering for children's course
         Skier childSkier = new Skier();
         childSkier.setNumSkier(2L);
@@ -244,7 +244,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_ChildForAdultCourse() {
+    void testAddRegistrationAndAssignToSkierAndCourseChildForAdultCourse() {
         // Setup - Child trying to register for adult course
         Skier childSkier = new Skier();
         childSkier.setNumSkier(2L);
@@ -262,7 +262,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_IndividualCourse() {
+    void testAddRegistrationAndAssignToSkierAndCourseIndividualCourse() {
         // Setup - Individual course registration
         Course individualCourse = new Course();
         individualCourse.setNumCourse(3L);
@@ -284,7 +284,7 @@ class RegistrationServicesImplTest {
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_NullSkierOrCourse() {
+    void testAddRegistrationAndAssignToSkierAndCourseNullSkierOrCourse() {
         // Setup - both skier and course not found
         when(skierRepository.findById(anyLong())).thenReturn(Optional.empty());
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());

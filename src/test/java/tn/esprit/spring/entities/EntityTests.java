@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EntityTests {
 
+    private static final String LAST_NAME_SMITH = "Smith";
+
     @Test
     void testCourseEntity() {
         // Test no-args constructor
@@ -135,10 +137,10 @@ class EntityTests {
         assertTrue(instructor1.getCourses().contains(course));
         
         // Test all-args constructor
-        Instructor instructor2 = new Instructor(2L, "Jane", "Smith", LocalDate.of(2021, 5, 10), new HashSet<>());
+        Instructor instructor2 = new Instructor(2L, "Jane", LAST_NAME_SMITH, LocalDate.of(2021, 5, 10), new HashSet<>());
         assertEquals(2L, instructor2.getNumInstructor());
         assertEquals("Jane", instructor2.getFirstName());
-        assertEquals("Smith", instructor2.getLastName());
+        assertEquals(LAST_NAME_SMITH, instructor2.getLastName());
     }
 
     @Test
@@ -179,10 +181,10 @@ class EntityTests {
         assertEquals(2L, skier2.getNumSkier());
         assertEquals("Jane", skier2.getFirstName());
         
-        Skier skier3 = new Skier(3L, "Bob", "Smith");
+        Skier skier3 = new Skier(3L, "Bob", LAST_NAME_SMITH);
         assertEquals(3L, skier3.getNumSkier());
         assertEquals("Bob", skier3.getFirstName());
-        assertEquals("Smith", skier3.getLastName());
+        assertEquals(LAST_NAME_SMITH, skier3.getLastName());
         
         Skier skier4 = new Skier(4L, "Alice", "Johnson", subscription);
         assertEquals(4L, skier4.getNumSkier());
