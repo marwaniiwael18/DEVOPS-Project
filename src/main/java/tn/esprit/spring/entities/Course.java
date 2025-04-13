@@ -19,20 +19,22 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 @Entity
 public class Course implements Serializable {
-
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	Long numCourse;
-	int level;
-	@Enumerated(EnumType.STRING)
-	TypeCourse typeCourse;
-	@Enumerated(EnumType.STRING)
-	Support support;
-	Float price;
-	int timeSlot;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long numCourse;
 
-	@JsonIgnore
-	@OneToMany(mappedBy= "course")
-	Set<Registration> registrations;
+	private Integer level;
 
+	@Enumerated(EnumType.STRING)
+	private TypeCourse typeCourse;
+
+	@Enumerated(EnumType.STRING)
+	private Support support;
+
+	private Float price;
+
+	@ManyToOne
+	private Instructor instructor;
+
+	// Add getters, setters, and other required annotations
 }
