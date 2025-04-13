@@ -1,58 +1,46 @@
 version: '3.8'
 
 services:
-  mysql_db:
+  mysql_db2:
     image: mysql:8.0
-    container_name: mysql_db
+    container_name: mysql_db2
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: stationSki
-      MYSQL_USER: root
-      MYSQL_PASSWORD: ""
+
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - spring_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
 
   spring_app:
-    image: 10.0.2.15:8083/yassinemanai_4twin3_thunder_gestionski:${imageTag}
-    container_name: spring_backend1
+    image: 10.0.2.15:8083/yassinemanai_4twin3_thunder_gestionski:${imageTag}  # Utilisation du nom du conteneur Nexus
+    container_name: backend
     depends_on:
-      - mysql_db
+      mysql_db2:
+        condition: service_healthy  # Attend que MySQL soit prêt
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/stationSki?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db2:3306/stationSki?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL5InnoDBDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
       SPRING_JPA_OPEN_IN_VIEW: "false"
-      LOGGING_LEVEL_ROOT: info
-      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
-      LOGGING_LEVEL_TN_ESPRIT_SPRING: DEBUG
       TZ: Africa/Tunis
     ports:
       - "8087:8087"
+      - "8089:8089"
     restart: always
     networks:
       - spring_network
-
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus_server
-    restart: always
-    ports:
-      - "8081:8081"
-    networks:
-      - spring_network
-    volumes:
-      - nexus-data:/nexus-data
 
 networks:
   spring_network:
     driver: bridge
-
-volumes:
-  nexus-data:
