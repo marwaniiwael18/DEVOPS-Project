@@ -35,9 +35,24 @@ pipeline {
         }
 
         stage('Run Tests') {
-            steps {
-                sh 'mvn clean test'
-            }
+              steps {
+                   script {
+                       // Start MySQL container
+                       sh 'docker-compose up -d mysql_container_test'
+
+                       // Optional: Wait for MySQL to be ready (simple retry loop)
+                       sh '''
+                       echo "Waiting for MySQL to be ready..."
+                       for i in {1..10}; do
+                         docker exec mysql_container_test mysqladmin ping -h"localhost" --silent && break
+                         echo "MySQL not ready yet... waiting"
+                         sleep 5
+                       done
+                       '''
+
+                       // Run tests
+                       sh 'mvn clean test -Dspring.profiles.active=default'
+                   }
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
