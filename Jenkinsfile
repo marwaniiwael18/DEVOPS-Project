@@ -101,27 +101,48 @@ pipeline {
                    }
                }
 
-                   stage('Run Application') {
-                           steps {
-                               script {
-                                   docker.withRegistry("http://$registry", registryCredentials) {
-                                       sh "docker pull $registry/$imageName:$imageTag"
+                     stage('Run Application') {
+                              steps {
+                                  script {
+                                      // Libère le port 8081 s’il est déjà utilisé
+                                      sh 'fuser -k 8081/tcp || true'
 
-                                       // Replace IMAGE_TAG dynamically in docker-compose.yml
-                                       sh "sed -i 's|localhost:8083/yassinemanai_4twin3_thunder_gestionski:IMAGE_TAG|$registry/$imageName:$imageTag|g' docker-compose.yml"
-                                       sh "cat docker-compose.yml" // Verification
+                                      // Arrêt des conteneurs existants et suppression des orphelins
+                                      sh 'docker-compose down --remove-orphans || true'
 
-                                       // Cleanup existing containers to avoid conflicts
-                                       sh "docker-compose down --remove-orphans"
-
-                                       // Pass IMAGE_TAG explicitly to docker-compose
-                                       withEnv(["IMAGE_TAG=${imageTag}"]) {
-                                           sh "IMAGE_TAG=${imageTag} docker-compose up -d"
-                                       }
-                                   }
-                               }
-                           }
-                       }
+                                      writeFile file: 'docker-compose.yml', text: """
+                  version: '3.8'
+                  services:
+                    spring_backend:
+                      image: ${dockerHubRepo}:${imageTag}
+                      container_name: spring_backend
+                      environment:
+                        SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+                        SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+                        SPRING_DATASOURCE_USERNAME: sa
+                        SPRING_DATASOURCE_PASSWORD: TestDbStrongP@ss123
+                        SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.H2Dialect
+                        SPRING_H2_CONSOLE_ENABLED: "true"
+                        SPRING_H2_CONSOLE_PATH: /h2-console
+                        SERVER_PORT: 8081
+                        SPRING_JPA_HIBERNATE_DDL_AUTO: update
+                        SPRING_JPA_SHOW_SQL: "true"
+                        LOGGING_LEVEL_ROOT: info
+                        LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
+                        TZ: Africa/Tunis
+                      ports:
+                        - "8081:8081"
+                      healthcheck:
+                        test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+                        interval: 30s
+                        timeout: 10s
+                        retries: 3
+                      restart: always
+                  """
+                                      sh 'docker-compose up -d'
+                                  }
+                              }
+                          }
     }
 
     post {
