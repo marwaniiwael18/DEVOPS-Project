@@ -123,6 +123,50 @@ pipeline {
                 }
             }
         }
+        stage('Run Application') {
+            steps {
+                script {
+                    echo "Starting the application container..."
+                    // Pull the latest image we just pushed to Nexus
+                    sh "docker pull ${registry}/myspringapp:${BUILD_NUMBER}"
+
+                    // Stop and remove any existing container with the same name to avoid conflicts
+                    sh "docker stop myspringapp-container || true"
+                    sh "docker rm myspringapp-container || true"
+
+                    // Run the Docker container with appropriate configurations
+                    sh """
+                        docker run -d \
+                        --name myspringapp-container \
+                        -p 8080:8080 \
+                        -e SPRING_DATASOURCE_URL=jdbc:mysql://192.168.77.129:3306/stationSki?createDatabaseIfNotExist=true \
+                        -e SPRING_DATASOURCE_USERNAME=root \
+                        -e SPRING_DATASOURCE_PASSWORD= \
+                        -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+                        ${registry}/myspringapp:${BUILD_NUMBER}
+                    """
+
+                    // Verify the container is running
+                    sh "docker ps | grep myspringapp-container"
+
+                    // Wait for application to start up properly
+                    sh "sleep 10"
+
+                    // Optionally check if the application is responding
+                    sh "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || echo 'Health check failed'"
+                }
+            }
+            post {
+                success {
+                    echo "Application is now running successfully!"
+                }
+                failure {
+                    echo "Failed to start the application!"
+                    // Optionally get logs to debug
+                    sh "docker logs myspringapp-container"
+                }
+            }
+        }
         stage('Start Monitoring Stack') {
             steps {
                 script {
