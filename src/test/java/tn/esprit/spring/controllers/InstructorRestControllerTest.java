@@ -114,6 +114,7 @@ public class InstructorRestControllerTest {
 
     @Test
     void testAddAndAssignInstructorToCourse() throws Exception {
+        // Setup instructor for response
         when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(instructor);
 
         mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "1")
@@ -146,12 +147,11 @@ public class InstructorRestControllerTest {
     void testUpdateInstructorSuccess() throws Exception {
         // Create a complete and valid DTO
         instructorDTO = new InstructorDTO();
-        // No need to set ID anymore
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
-        instructorDTO.setCity("New York"); // Add required city field
-        instructorDTO.setEmail("instructor@example.com"); // Add an email
+        instructorDTO.setCity("New York"); 
+        instructorDTO.setEmail("instructor@example.com");
         
         instructor.setFirstName(UPDATED_FIRST_NAME);
         when(instructorServices.updateInstructor(any())).thenReturn(instructor);
@@ -169,12 +169,11 @@ public class InstructorRestControllerTest {
     void testUpdateInstructorNotFound() throws Exception {
         // Create a complete and valid DTO
         instructorDTO = new InstructorDTO();
-        // No need to set ID anymore
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
-        instructorDTO.setCity("New York"); // Add required city field
-        instructorDTO.setEmail("instructor@example.com"); // Add an email
+        instructorDTO.setCity("New York");
+        instructorDTO.setEmail("instructor@example.com");
         
         when(instructorServices.updateInstructor(any())).thenReturn(null);
 
