@@ -137,11 +137,11 @@ pipeline {
                         sh "docker stop myspringapp-container || true"
                         sh "docker rm myspringapp-container || true"
 
-                        // Run the Docker container with appropriate configurations
+                        // Run the Docker container with port 8089
                         sh """
                             docker run -d \
                             --name myspringapp-container \
-                            -p 8080:8080 \
+                            -p 8089:8080 \
                             -e SPRING_DATASOURCE_URL=jdbc:mysql://192.168.77.129:3306/stationSki?createDatabaseIfNotExist=true \
                             -e SPRING_DATASOURCE_USERNAME=root \
                             -e SPRING_DATASOURCE_PASSWORD= \
@@ -155,14 +155,14 @@ pipeline {
                         // Wait for application to start up properly
                         sh "sleep 10"
 
-                        // Optionally check if the application is responding
-                        sh "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || echo 'Health check failed'"
+                        // Update health check to use port 8089
+                        sh "curl -s -o /dev/null -w '%{http_code}' http://localhost:8089/health || echo 'Health check failed'"
                     }
                 }
             }
             post {
                 success {
-                    echo "Application is now running successfully!"
+                    echo "Application is now running successfully on port 8089!"
                 }
                 failure {
                     echo "Failed to start the application!"
