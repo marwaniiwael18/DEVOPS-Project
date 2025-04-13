@@ -50,19 +50,11 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Step 1: Build and test (generates jacoco.xml)
-                        sh 'mvn clean install'
-
-                        // Step 2: Show content of JaCoCo report folder
-                        sh 'ls -l target/site/jacoco/'
-
-                        // Step 3: Run SonarQube analysis with coverage report
                         sh """
                             mvn sonar:sonar \
                             -Dsonar.projectKey=tn.esprit.myspringapp \
                             -Dsonar.host.url=${SONARQUBE_SERVER} \
-                            -Dsonar.login=${SONARQUBE_TOKEN} \
-                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                            -Dsonar.login=${SONARQUBE_TOKEN}
                         """
                     } catch (Exception e) {
                         echo "SonarQube analysis failed: ${e}"
@@ -71,7 +63,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Package Application') {
             steps {
