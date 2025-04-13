@@ -189,7 +189,7 @@ pipeline {
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
                 attachLog: true,
-                // Added explicit SMTP settingssssss
+                // Added explicit SMTP settingsssss
                 smtp: 'smtp.gmail.com',
                 smtpPort: '587',
                 useSsl: false,
