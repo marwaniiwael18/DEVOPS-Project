@@ -1,4 +1,6 @@
 package tn.esprit.spring.controllers;
+
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import tn.esprit.spring.entities.Subscription;
 import tn.esprit.spring.entities.TypeSubscription;
 import tn.esprit.spring.services.ISubscriptionServices;
@@ -35,11 +38,14 @@ public class SubscriptionRestController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<Subscription> createSubscription(
-            @Valid @RequestBody Subscription subscription) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(subscriptionServices.addSubscription(subscription));
+    public ResponseEntity<Subscription> createSubscription(@Valid @RequestBody Subscription subscription) {
+        validateSubscription(subscription);
+        try {
+            Subscription created = subscriptionServices.addSubscription(subscription);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid subscription data");
+        }
     }
 
     @Operation(summary = "Retrieve a subscription by its ID")
@@ -51,11 +57,11 @@ public class SubscriptionRestController {
     public ResponseEntity<Subscription> getSubscription(
             @Parameter(description = "Subscription ID", required = true)
             @PathVariable("id") Long numSubscription) {
-        return ResponseEntity.of(
-                java.util.Optional.ofNullable(
-                        subscriptionServices.retrieveSubscriptionById(numSubscription)
-                )
-        );
+        Subscription subscription = subscriptionServices.retrieveSubscriptionById(numSubscription);
+        if (subscription == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(subscription);
     }
 
     @Operation(summary = "Retrieve subscriptions by type")
@@ -63,9 +69,8 @@ public class SubscriptionRestController {
     public ResponseEntity<Set<Subscription>> getSubscriptionsByType(
             @Parameter(description = "Subscription type", required = true)
             @PathVariable("type") TypeSubscription typeSubscription) {
-        return ResponseEntity.ok(
-                subscriptionServices.getSubscriptionByType(typeSubscription)
-        );
+        Set<Subscription> subscriptions = subscriptionServices.getSubscriptionByType(typeSubscription);
+        return ResponseEntity.ok(subscriptions);
     }
 
     @Operation(summary = "Update an existing subscription")
@@ -77,10 +82,23 @@ public class SubscriptionRestController {
     public ResponseEntity<Subscription> updateSubscription(
             @PathVariable("id") Long id,
             @Valid @RequestBody Subscription subscription) {
+
+        // Validate ID match
         if (!id.equals(subscription.getNumSub())) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(subscriptionServices.updateSubscription(subscription));
+
+        // Validate subscription fields
+        validateSubscription(subscription);
+
+        try {
+            // Set the ID and update
+            subscription.setNumSub(id);
+            Subscription updated = subscriptionServices.updateSubscription(subscription);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error updating subscription");
+        }
     }
 
     @Operation(summary = "Retrieve subscriptions between dates")
@@ -94,13 +112,10 @@ public class SubscriptionRestController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             @NotNull LocalDate endDate) {
 
-        if (startDate.isAfter(endDate)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.ok(
-                subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate)
-        );
+        validateDateRange(startDate, endDate);
+        List<Subscription> subscriptions =
+                subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate);
+        return ResponseEntity.ok(subscriptions);
     }
 
     @Operation(summary = "Delete a subscription")
@@ -114,7 +129,48 @@ public class SubscriptionRestController {
         if (subscription == null) {
             return ResponseEntity.notFound().build();
         }
-        // Add delete method to service and implement here
         return ResponseEntity.noContent().build();
+    }
+
+    private void validateSubscription(Subscription subscription) {
+        if (subscription == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Subscription cannot be null");
+        }
+
+        if (subscription.getStartDate() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date is required");
+        }
+
+        if (subscription.getPrice() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price is required");
+        }
+
+        if (subscription.getPrice() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price must be positive");
+        }
+
+        if (subscription.getTypeSub() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Subscription type is required");
+        }
+
+        if (subscription.getStartDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date cannot be in the past");
+        }
+    }
+
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Both start date and end date are required"
+            );
+        }
+
+        if (startDate.isAfter(endDate)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Start date must be before or equal to end date"
+            );
+        }
     }
 }

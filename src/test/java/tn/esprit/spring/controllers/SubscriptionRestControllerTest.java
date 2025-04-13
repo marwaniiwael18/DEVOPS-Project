@@ -17,14 +17,15 @@ import tn.esprit.spring.services.ISubscriptionServices;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SubscriptionRestController.class)
@@ -65,22 +66,40 @@ class SubscriptionRestControllerTest {
             mockMvc.perform(post("/api/v1/subscriptions")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testSubscription)))
+                    .andDo(print())
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.numSub", is(1)))
                     .andExpect(jsonPath("$.price", is(100.0)))
-                    .andExpect(jsonPath("$.typeSub", is("MONTHLY")));
+                    .andExpect(jsonPath("$.typeSub", is("MONTHLY")))
+                    .andExpect(jsonPath("$.startDate", notNullValue()))
+                    .andExpect(jsonPath("$.endDate", notNullValue()));
 
             verify(subscriptionServices).addSubscription(any(Subscription.class));
         }
 
         @Test
-        @DisplayName("Should reject invalid subscription")
-        void shouldRejectInvalidSubscription() throws Exception {
-            testSubscription.setPrice(-100.0f); // Invalid price
+        @DisplayName("Should reject subscription with negative price")
+        void shouldRejectSubscriptionWithNegativePrice() throws Exception {
+            testSubscription.setPrice(-100.0f);
 
             mockMvc.perform(post("/api/v1/subscriptions")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testSubscription)))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+
+            verify(subscriptionServices, never()).addSubscription(any());
+        }
+
+        @Test
+        @DisplayName("Should reject subscription with missing required fields")
+        void shouldRejectSubscriptionWithMissingFields() throws Exception {
+            Subscription invalidSubscription = new Subscription();
+
+            mockMvc.perform(post("/api/v1/subscriptions")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidSubscription)))
+                    .andDo(print())
                     .andExpect(status().isBadRequest());
 
             verify(subscriptionServices, never()).addSubscription(any());
@@ -98,8 +117,10 @@ class SubscriptionRestControllerTest {
                     .thenReturn(testSubscription);
 
             mockMvc.perform(get("/api/v1/subscriptions/{id}", 1))
+                    .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.numSub", is(1)))
+                    .andExpect(jsonPath("$.price", is(100.0)))
                     .andExpect(jsonPath("$.typeSub", is("MONTHLY")));
 
             verify(subscriptionServices).retrieveSubscriptionById(1L);
@@ -112,6 +133,7 @@ class SubscriptionRestControllerTest {
                     .thenReturn(null);
 
             mockMvc.perform(get("/api/v1/subscriptions/{id}", 999))
+                    .andDo(print())
                     .andExpect(status().isNotFound());
 
             verify(subscriptionServices).retrieveSubscriptionById(999L);
@@ -120,14 +142,16 @@ class SubscriptionRestControllerTest {
         @Test
         @DisplayName("Should get subscriptions by type")
         void shouldGetSubscriptionsByType() throws Exception {
-            Set<Subscription> subscriptions = new HashSet<>(Arrays.asList(testSubscription));
+            Set<Subscription> subscriptions = new HashSet<>(Collections.singletonList(testSubscription));
             when(subscriptionServices.getSubscriptionByType(TypeSubscription.MONTHLY))
                     .thenReturn(subscriptions);
 
             mockMvc.perform(get("/api/v1/subscriptions/by-type/{type}", "MONTHLY"))
+                    .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].typeSub", is("MONTHLY")));
+                    .andExpect(jsonPath("$[0].typeSub", is("MONTHLY")))
+                    .andExpect(jsonPath("$[0].price", is(100.0)));
 
             verify(subscriptionServices).getSubscriptionByType(TypeSubscription.MONTHLY);
         }
@@ -137,19 +161,33 @@ class SubscriptionRestControllerTest {
         void shouldGetSubscriptionsByDateRange() throws Exception {
             LocalDate startDate = LocalDate.now();
             LocalDate endDate = LocalDate.now().plusMonths(1);
-            List<Subscription> subscriptions = Arrays.asList(testSubscription);
-
             when(subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate))
-                    .thenReturn(subscriptions);
+                    .thenReturn(Arrays.asList(testSubscription));
 
             mockMvc.perform(get("/api/v1/subscriptions/by-date-range")
                             .param("startDate", startDate.toString())
                             .param("endDate", endDate.toString()))
+                    .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].typeSub", is("MONTHLY")));
 
             verify(subscriptionServices).retrieveSubscriptionsByDates(startDate, endDate);
+        }
+
+        @Test
+        @DisplayName("Should reject invalid date range")
+        void shouldRejectInvalidDateRange() throws Exception {
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = startDate.minusDays(1); // End date before start date
+
+            mockMvc.perform(get("/api/v1/subscriptions/by-date-range")
+                            .param("startDate", startDate.toString())
+                            .param("endDate", endDate.toString()))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+
+            verify(subscriptionServices, never()).retrieveSubscriptionsByDates(any(), any());
         }
     }
 
@@ -166,6 +204,7 @@ class SubscriptionRestControllerTest {
             mockMvc.perform(put("/api/v1/subscriptions/{id}", 1)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testSubscription)))
+                    .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.numSub", is(1)))
                     .andExpect(jsonPath("$.price", is(100.0)));
@@ -179,6 +218,7 @@ class SubscriptionRestControllerTest {
             mockMvc.perform(put("/api/v1/subscriptions/{id}", 2)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(testSubscription)))
+                    .andDo(print())
                     .andExpect(status().isBadRequest());
 
             verify(subscriptionServices, never()).updateSubscription(any());
@@ -196,6 +236,7 @@ class SubscriptionRestControllerTest {
                     .thenReturn(testSubscription);
 
             mockMvc.perform(delete("/api/v1/subscriptions/{id}", 1))
+                    .andDo(print())
                     .andExpect(status().isNoContent());
 
             verify(subscriptionServices).retrieveSubscriptionById(1L);
@@ -208,6 +249,7 @@ class SubscriptionRestControllerTest {
                     .thenReturn(null);
 
             mockMvc.perform(delete("/api/v1/subscriptions/{id}", 999))
+                    .andDo(print())
                     .andExpect(status().isNotFound());
 
             verify(subscriptionServices).retrieveSubscriptionById(999L);
