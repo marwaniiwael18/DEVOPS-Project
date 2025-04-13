@@ -50,8 +50,14 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Step 1: Build and test (generates jacoco.xml)
-                        sh 'mvn clean install'
+                        // Step 1: Build and test with MySQL connection parameters (generates jacoco.xml)
+                        sh """
+                            mvn clean install \
+                            -Dspring.datasource.url=jdbc:mysql://192.168.77.129:3306/stationSki?createDatabaseIfNotExist=true \
+                            -Dspring.datasource.username=root \
+                            -Dspring.datasource.password= \
+                            -Dspring.jpa.hibernate.ddl-auto=update
+                        """
 
                         // Step 2: Show content of JaCoCo report folder
                         sh 'ls -l target/site/jacoco/'
