@@ -51,7 +51,7 @@ pipeline {
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.sources=src \
+                            -Dsonar.sources=src/main/java \
                             -Dsonar.tests=src/test/java \
                             -Dsonar.java.binaries=target/classes \
                             -Dsonar.sourceEncoding=UTF-8 \
