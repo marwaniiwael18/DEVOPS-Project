@@ -1,5 +1,4 @@
 package tn.esprit.spring.controllers;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,22 +14,18 @@ import tn.esprit.spring.dto.InstructorDTO;
 import tn.esprit.spring.entities.Instructor;
 import tn.esprit.spring.mappers.InstructorMapper;
 import tn.esprit.spring.services.IInstructorServices;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @WebMvcTest(InstructorRestController.class)
 @Import(TestConfig.class)
 public class InstructorRestControllerTest {
-
     // API endpoints constants
     private static final String INSTRUCTOR_ADD_ENDPOINT = "/instructor/add";
     private static final String INSTRUCTOR_UPDATE_ENDPOINT = "/instructor/update";
@@ -51,6 +46,8 @@ public class InstructorRestControllerTest {
     private static final String UPDATED_FIRST_NAME = "UpdatedName";
     private static final String JANE = "Jane";
     private static final String SMITH = "Smith";
+    private static final String CITY_NEW_YORK = "New York";
+    private static final String EMAIL_INSTRUCTOR = "instructor@example.com";
 
     @Autowired
     private MockMvc mockMvc;
@@ -82,8 +79,8 @@ public class InstructorRestControllerTest {
         validDTO.setFirstName(INSTRUCTOR_FIRST_NAME);
         validDTO.setLastName(INSTRUCTOR_LAST_NAME);
         validDTO.setDateOfHire(LocalDate.now());
-        validDTO.setCity("New York"); // Add required city field
-        validDTO.setEmail("instructor@example.com"); // Add an email
+        validDTO.setCity(CITY_NEW_YORK); // Use constant
+        validDTO.setEmail(EMAIL_INSTRUCTOR); // Use constant
         
         // Mock controller behavior to bypass validation
         // This will make the controller return a successful response regardless of input
@@ -150,8 +147,8 @@ public class InstructorRestControllerTest {
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
-        instructorDTO.setCity("New York"); 
-        instructorDTO.setEmail("instructor@example.com");
+        instructorDTO.setCity(CITY_NEW_YORK); // Use constant
+        instructorDTO.setEmail(EMAIL_INSTRUCTOR); // Use constant
         
         instructor.setFirstName(UPDATED_FIRST_NAME);
         when(instructorServices.updateInstructor(any())).thenReturn(instructor);
@@ -172,8 +169,8 @@ public class InstructorRestControllerTest {
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
-        instructorDTO.setCity("New York");
-        instructorDTO.setEmail("instructor@example.com");
+        instructorDTO.setCity(CITY_NEW_YORK); // Use constant
+        instructorDTO.setEmail(EMAIL_INSTRUCTOR); // Use constant
         
         when(instructorServices.updateInstructor(any())).thenReturn(null);
 
