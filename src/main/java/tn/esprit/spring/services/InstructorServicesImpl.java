@@ -58,6 +58,11 @@ public class InstructorServicesImpl implements IInstructorServices{
     @Override
     public Instructor retrieveInstructor(Long numInstructor) {
         logger.info("Retrieving instructor with ID: {}", numInstructor);
+        
+        if (numInstructor == null) {
+            logger.warn("Cannot retrieve instructor with null ID");
+            return null;
+        }
 
         return instructorRepository.findById(numInstructor)
                 .map(instructor -> {
@@ -73,6 +78,11 @@ public class InstructorServicesImpl implements IInstructorServices{
     @Override
     public Instructor addInstructorAndAssignToCourse(Instructor instructor, Long numCourse) {
         logger.info("Attempting to add instructor and assign to course ID: {}", numCourse);
+        
+        if (instructor == null || numCourse == null) {
+            logger.warn("Cannot assign instructor to course - instructor or course ID is null");
+            return null;
+        }
 
         Course course = courseRepository.findById(numCourse).orElse(null);
 
@@ -90,8 +100,16 @@ public class InstructorServicesImpl implements IInstructorServices{
 
         return savedInstructor;
     }
+
     @Override
     public void deleteInstructor(Long numInstructor) {
+        logger.info("Attempting to delete instructor with ID: {}", numInstructor);
+        
+        if (numInstructor == null) {
+            logger.warn("Cannot delete instructor with null ID");
+            return;
+        }
+        
         if (instructorRepository.existsById(numInstructor)) {
             instructorRepository.deleteById(numInstructor);
             logger.info("Instructor with ID {} deleted successfully", numInstructor);
@@ -99,7 +117,4 @@ public class InstructorServicesImpl implements IInstructorServices{
             logger.warn("Instructor with ID {} not found, deletion failed", numInstructor);
         }
     }
-
-
-
 }

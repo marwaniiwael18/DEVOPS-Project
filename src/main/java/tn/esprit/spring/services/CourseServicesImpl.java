@@ -37,6 +37,11 @@ public class CourseServicesImpl implements ICourseServices {
     @Override
     public Course updateCourse(Course course) {
         logger.info("Attempting to update course: {}", course);
+        
+        if (course == null) {
+            logger.warn("Cannot update null course");
+            return null;
+        }
 
         return courseRepository.findById(course.getNumCourse())
                 .map(existingCourse -> {
@@ -50,10 +55,14 @@ public class CourseServicesImpl implements ICourseServices {
                 });
     }
 
-
     @Override
     public Course retrieveCourse(Long numCourse) {
         logger.info("Retrieving course with ID: {}", numCourse);
+        
+        if (numCourse == null) {
+            logger.warn("Cannot retrieve course with null ID");
+            return null;
+        }
 
         return courseRepository.findById(numCourse)
                 .map(course -> {
@@ -69,6 +78,11 @@ public class CourseServicesImpl implements ICourseServices {
     @Override
     public void deleteCourse(Long numCourse) {
         logger.info("Attempting to delete course with ID: {}", numCourse);
+        
+        if (numCourse == null) {
+            logger.warn("Cannot delete course with null ID");
+            return;
+        }
 
         if (courseRepository.existsById(numCourse)) {
             courseRepository.deleteById(numCourse);

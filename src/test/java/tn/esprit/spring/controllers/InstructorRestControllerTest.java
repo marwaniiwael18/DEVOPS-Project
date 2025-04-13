@@ -4,25 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tn.esprit.spring.entities.Instructor;
-
 import tn.esprit.spring.services.IInstructorServices;
-import tn.esprit.spring.repositories.ICourseRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -30,16 +24,15 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(InstructorRestController.class)
-@AutoConfigureMockMvc
-@ExtendWith(SpringExtension.class)
 public class InstructorRestControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private IInstructorServices instructorServices;
+
+    @InjectMocks
+    private InstructorRestController instructorRestController;
 
     private Instructor instructor;
     private static final String INSTRUCTOR_ADD_ENDPOINT = "/instructor/add";
@@ -50,11 +43,15 @@ public class InstructorRestControllerTest {
     private static final String JSON_PATH_FIRST_NAME = "$.firstName";
     private static final String JSON_PATH_LAST_NAME = "$.lastName";
 
-
-    @Autowired
     private ObjectMapper objectMapper;
+
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(instructorRestController).build();
+
+        // Initialize ObjectMapper
+        objectMapper = new ObjectMapper();
         // Register JavaTimeModule to handle LocalDate serialization/deserialization
         objectMapper.registerModule(new JavaTimeModule());
 
@@ -131,6 +128,58 @@ public class InstructorRestControllerTest {
         verify(instructorServices, times(1)).updateInstructor(any(Instructor.class));
     }
 
+    @Test
+    void testUpdateInstructorNotFound() throws Exception {
+        instructor.setFirstName("UpdatedName");
+        when(instructorServices.updateInstructor(any(Instructor.class))).thenReturn(null);
+
+        mockMvc.perform(put(INSTRUCTOR_UPDATE_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructor)))
+                .andExpect(status().isNotFound());
+
+        verify(instructorServices, times(1)).updateInstructor(any(Instructor.class));
+    }
+
+    @Test
+    void testAddAndAssignInstructorToCourseNotFound() throws Exception {
+        when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(null);
+
+        mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructor)))
+                .andExpect(status().isNotFound());
+
+        verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+    }
+
+    @Test
+    void testAddInstructorNullInstructor() throws Exception {
+        when(instructorServices.addInstructor(null)).thenThrow(IllegalArgumentException.class);
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testAddAndAssignInstructorToCourseInvalidCourseId() throws Exception {
+        mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructor)))
+                .andExpect(status().isBadRequest());  // Now expecting 400 Bad Request
+
+        verify(instructorServices, never()).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+    }
+
+    @Test
+    void testDeleteInstructorInvalidId() throws Exception {
+        mockMvc.perform(delete("/instructor/delete/invalid"))
+                .andExpect(status().isBadRequest());  // Now expecting 400 Bad Request
+
+        verify(instructorServices, never()).deleteInstructor(anyLong());
+    }
 
     @Test
     void testGetInstructorByIdSuccess() throws Exception {
@@ -156,7 +205,7 @@ public class InstructorRestControllerTest {
     @Test
     void testGetInstructorByIdInvalidId() throws Exception {
         mockMvc.perform(get("/instructor/get/invalid"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest());  // Now expecting 400 Bad Request
 
         verify(instructorServices, never()).retrieveInstructor(anyLong());
     }
@@ -201,12 +250,6 @@ public class InstructorRestControllerTest {
                         .content(objectMapper.writeValueAsString(invalidInstructor)))
                 .andExpect(status().isBadRequest());  // Vérifie que la validation échoue
     }
-
-
-
-
-
-
 
     // Utility method to create a sample Instructor
     private Instructor createSampleInstructor(Long id, String firstName, String lastName) {

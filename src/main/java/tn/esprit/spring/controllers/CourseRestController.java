@@ -26,10 +26,15 @@ public class CourseRestController {
     @Operation(description = "Add Course")
     @PostMapping("/add")
     public ResponseEntity<Course> addCourse(@Valid @RequestBody Course course) {
-        logger.info("📌 [ADD] Request to add a new course: {}", course);
-        Course savedCourse = courseServices.addCourse(course);
-        logger.info("✅ Course successfully added: {}", savedCourse);
-        return ResponseEntity.ok(savedCourse);
+        try {
+            logger.info("📌 [ADD] Request to add a new course: {}", course);
+            Course savedCourse = courseServices.addCourse(course);
+            logger.info("✅ Course successfully added: {}", savedCourse);
+            return ResponseEntity.ok(savedCourse);
+        } catch (Exception e) {
+            logger.error("❌ Error adding course: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @Operation(description = "Retrieve all Courses")
@@ -74,16 +79,22 @@ public class CourseRestController {
 
     @Operation(description = "Delete Course by ID")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable("id") Long numCourse) {
+    public ResponseEntity<Void> deleteCourse(@PathVariable("id") String numCourse) {
         logger.info("📌 [DELETE] Request received to delete course with ID: {}", numCourse);
-
-        if (courseServices.retrieveCourse(numCourse) != null) {
-            courseServices.deleteCourse(numCourse);
-            logger.info("✅ Course successfully deleted with ID: {}", numCourse);
-            return ResponseEntity.noContent().build();
-        } else {
-            logger.warn("⚠️ Course with ID {} not found", numCourse);
-            return ResponseEntity.notFound().build();
+        
+        try {
+            Long courseId = Long.parseLong(numCourse);
+            if (courseServices.retrieveCourse(courseId) != null) {
+                courseServices.deleteCourse(courseId);
+                logger.info("✅ Course successfully deleted with ID: {}", courseId);
+                return ResponseEntity.noContent().build();
+            } else {
+                logger.warn("⚠️ Course with ID {} not found", courseId);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (NumberFormatException e) {
+            logger.error("❌ Invalid course ID format: {}", numCourse);
+            return ResponseEntity.badRequest().build();
         }
     }
 

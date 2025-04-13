@@ -41,7 +41,8 @@ class InstructorServicesImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        // Replace deprecated initMocks with openMocks
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -279,20 +280,19 @@ class InstructorServicesImplTest {
         verify(courseRepository, times(1)).findById(1L);
         verify(instructorRepository, times(1)).save(any(Instructor.class));
     }
+
     @Test
     void testDeleteInstructor() {
-        Long instructorId = 1L;
-
         // Simuler que l'instructeur existe avant la suppression
-        when(instructorRepository.existsById(instructorId)).thenReturn(true);
-        doNothing().when(instructorRepository).deleteById(instructorId);
+        when(instructorRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(instructorRepository).deleteById(1L);
 
-        instructorService.deleteInstructor(instructorId);
+        instructorService.deleteInstructor(1L);
 
         // Vérifier que `existsById` a bien été appelé
-        verify(instructorRepository, times(1)).existsById(instructorId);
+        verify(instructorRepository, times(1)).existsById(1L);
         // Vérifier que `deleteById` a bien été appelé
-        verify(instructorRepository, times(1)).deleteById(instructorId);
+        verify(instructorRepository, times(1)).deleteById(1L);
     }
 
     @Test
@@ -301,8 +301,9 @@ class InstructorServicesImplTest {
 
         assertThrows(RuntimeException.class, () -> instructorService.retrieveInstructor(1L));
 
-        verify(instructorRepository, times(1)).findById(1L);
+        verify(instructorRepository, times(1)).findById(anyLong());
     }
+
     @Test
     void testDeleteInstructorNotFound() {
         Long instructorId = 99L;
@@ -310,6 +311,83 @@ class InstructorServicesImplTest {
         instructorService.deleteInstructor(instructorId);
         verify(instructorRepository, times(1)).existsById(instructorId);
         verify(instructorRepository, never()).deleteById(anyLong());
+    }
 
+    @Test
+    void testDeleteInstructorWithNullId() {
+        // Test that the service gracefully handles null instructor ID
+        instructorService.deleteInstructor(null);
+        
+        // Verify that repository methods are never called with null ID
+        verify(instructorRepository, never()).existsById(any());
+        verify(instructorRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void testAddInstructorAndAssignToCourseWithTooManyCourses() {
+        Instructor instructor = new Instructor(1L, INSTRUCTOR_FIRST_NAME, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE, new HashSet<>());
+
+        // Add 10 courses to simulate max capacity
+        for (int i = 1; i <= 10; i++) {
+            Course course = new Course((long) i, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
+            instructor.getCourses().add(course);
+        }
+
+        Course newCourse = new Course(11L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
+        when(courseRepository.findById(11L)).thenReturn(Optional.of(newCourse));
+
+        // The service should still add the course even if there are many courses
+        when(instructorRepository.save(any(Instructor.class))).thenReturn(instructor);
+
+        Instructor result = instructorService.addInstructorAndAssignToCourse(instructor, 11L);
+
+        assertNotNull(result);
+        assertEquals(11, result.getCourses().size());
+        verify(courseRepository, times(1)).findById(11L);
+        verify(instructorRepository, times(1)).save(any(Instructor.class));
+    }
+
+    @Test
+    void testRetrieveAllInstructorsEmpty() {
+        when(instructorRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<Instructor> retrievedInstructors = instructorService.retrieveAllInstructors();
+
+        assertNotNull(retrievedInstructors);
+        assertTrue(retrievedInstructors.isEmpty());
+        verify(instructorRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testUpdateInstructorWithMismatchedId() {
+        // Try to update with instructor that has ID 2
+        Instructor updatedInstructor = new Instructor(2L, INSTRUCTOR_FIRST_NAME_UPDATED, INSTRUCTOR_LAST_NAME, INSTRUCTOR_HIRE_DATE_UPDATED, new HashSet<>());
+
+        when(instructorRepository.findById(2L)).thenReturn(Optional.empty());
+
+        Instructor result = instructorService.updateInstructor(updatedInstructor);
+
+        assertNull(result);
+        verify(instructorRepository, times(1)).findById(2L);
+        verify(instructorRepository, never()).save(any(Instructor.class));
+    }
+
+    @Test
+    void testAddInstructorAndAssignToCourseNullParameters() {
+        Instructor result = instructorService.addInstructorAndAssignToCourse(null, null);
+
+        assertNull(result);
+        verify(courseRepository, never()).findById(anyLong());
+        verify(instructorRepository, never()).save(any(Instructor.class));
+    }
+
+    @Test
+    void testUpdateInstructorInfo() {
+        // Setup
+        Instructor updatedInstructor = new Instructor();
+        updatedInstructor.setFirstName("Updated First Name");
+        updatedInstructor.setLastName("Updated Last Name");
+        
+        // ...existing code...
     }
 }

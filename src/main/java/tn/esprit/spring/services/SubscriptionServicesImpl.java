@@ -11,6 +11,7 @@ import tn.esprit.spring.repositories.ISkierRepository;
 import tn.esprit.spring.repositories.ISubscriptionRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -57,6 +58,13 @@ public class SubscriptionServicesImpl implements ISubscriptionServices{
     @Override
     public List<Subscription> retrieveSubscriptionsByDates(LocalDate startDate, LocalDate endDate) {
         return subscriptionRepository.getSubscriptionsByStartDateBetween(startDate, endDate);
+    }
+
+    @Override
+    public List<Subscription> retrieveAllSubscriptions() {
+        List<Subscription> subscriptions = new ArrayList<>();
+        subscriptionRepository.findAll().forEach(subscriptions::add);
+        return subscriptions;
     }
 
     @Override

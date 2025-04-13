@@ -49,6 +49,11 @@ public class SkierServicesImpl implements ISkierServices {
     public Skier assignSkierToSubscription(Long numSkier, Long numSubscription) {
         Skier skier = skierRepository.findById(numSkier).orElse(null);
         Subscription subscription = subscriptionRepository.findById(numSubscription).orElse(null);
+        
+        if (skier == null || subscription == null) {
+            return null;
+        }
+        
         skier.setSubscription(subscription);
         return skierRepository.save(skier);
     }
@@ -94,5 +99,13 @@ public class SkierServicesImpl implements ISkierServices {
     @Override
     public List<Skier> retrieveSkiersBySubscriptionType(TypeSubscription typeSubscription) {
         return skierRepository.findBySubscription_TypeSub(typeSubscription);
+    }
+
+    public Skier updateSkier(Skier skier) {
+        Skier existingSkier = skierRepository.findById(skier.getNumSkier()).orElse(null);
+        if (existingSkier != null) {
+            return skierRepository.save(skier);
+        }
+        return null;
     }
 }

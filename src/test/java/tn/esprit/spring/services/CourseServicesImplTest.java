@@ -13,10 +13,13 @@ import tn.esprit.spring.entities.TypeCourse;
 import tn.esprit.spring.repositories.ICourseRepository;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,25 +31,45 @@ class CourseServicesImplTest {
     @InjectMocks
     private CourseServicesImpl courseService;
 
+    private Course course;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
+        course = new Course(1L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 120.0f, 5, null);
     }
 
     @Test
     void testRetrieveAllCourses() {
-        when(courseRepository.findAll()).thenReturn(Arrays.asList(new Course(1L, 2, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5)));
+        // Setup
+        List<Course> courses = Arrays.asList(
+                new Course(1L, 3, TypeCourse.COLLECTIVE_ADULT, Support.SKI, 120.0f, 5, null),
+                new Course(2L, 4, TypeCourse.COLLECTIVE_CHILDREN, Support.SNOWBOARD, 100.0f, 6, null)
+        );
+        when(courseRepository.findAll()).thenReturn(courses);
 
-        List<Course> retrievedCourses = courseService.retrieveAllCourses();
+        // Execute
+        List<Course> result = courseService.retrieveAllCourses();
 
-        assertNotNull(retrievedCourses);
-        assertEquals(1, retrievedCourses.size());
+        // Verify
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(courseRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testRetrieveAllCoursesEmpty() {
+        when(courseRepository.findAll()).thenReturn(Collections.emptyList());
+        
+        List<Course> result = courseService.retrieveAllCourses();
+        
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
         verify(courseRepository, times(1)).findAll();
     }
 
     @Test
     void testRetrieveCourseFound() {
-        Course course = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
         Course retrievedCourse = courseService.retrieveCourse(1L);
@@ -56,97 +79,146 @@ class CourseServicesImplTest {
         verify(courseRepository, times(1)).findById(1L);
     }
 
-
     @Test
     void testRetrieveCourseNotFound() {
-        // ARRANGE
+        // Setup
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // ACT
-        Course retrievedCourse = courseService.retrieveCourse(99L);
+        // Execute
+        Course result = courseService.retrieveCourse(99L);
 
-        // ASSERT
-        assertNull(retrievedCourse);
+        // Verify
+        assertNull(result);
         verify(courseRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    void testRetrieveCourseWithNullId() {
+        Course result = courseService.retrieveCourse(null);
+        
+        assertNull(result);
+        verify(courseRepository, never()).findById(anyLong());
     }
 
     @Test
     void testAddCourse() {
-        // ARRANGE
-        Course newCourse = new Course(null, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5, null);
-        Course savedCourse = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5, null);
-        when(courseRepository.save(any(Course.class))).thenReturn(savedCourse);
+        // Setup
+        when(courseRepository.save(any(Course.class))).thenReturn(course);
 
-        // ACT
-        Course result = courseService.addCourse(newCourse);
+        // Execute
+        Course result = courseService.addCourse(course);
 
-        // ASSERT
+        // Verify
         assertNotNull(result);
         assertEquals(1L, result.getNumCourse());
-        verify(courseRepository, times(1)).save(any(Course.class));
+        assertEquals(TypeCourse.COLLECTIVE_ADULT, result.getTypeCourse());
+        verify(courseRepository, times(1)).save(course);
+    }
+
+    @Test
+    void testAddCourseWithNullInput() {
+        when(courseRepository.save(null)).thenThrow(IllegalArgumentException.class);
+        
+        assertThrows(IllegalArgumentException.class, () -> courseService.addCourse(null));
+    }
+
+    @Test
+    void testAddCourseWithAllFields() {
+        Course fullCourse = new Course();
+        fullCourse.setNumCourse(1L);
+        fullCourse.setLevel(3);
+        fullCourse.setTypeCourse(TypeCourse.COLLECTIVE_ADULT);
+        fullCourse.setSupport(Support.SKI);
+        fullCourse.setPrice(150.0f);
+        fullCourse.setTimeSlot(5);
+        
+        when(courseRepository.save(any(Course.class))).thenReturn(fullCourse);
+        
+        Course result = courseService.addCourse(fullCourse);
+        
+        assertNotNull(result);
+        assertEquals(1L, result.getNumCourse());
+        assertEquals(3, result.getLevel());
+        assertEquals(TypeCourse.COLLECTIVE_ADULT, result.getTypeCourse());
+        assertEquals(Support.SKI, result.getSupport());
+        assertEquals(150.0f, result.getPrice());
+        assertEquals(5, result.getTimeSlot());
+        verify(courseRepository, times(1)).save(fullCourse);
     }
 
     @Test
     void testUpdateCourse() {
-        // ARRANGE
-        Course existingCourse = new Course(1L, 3, TypeCourse.INDIVIDUAL, Support.SKI, 120.0f, 5, null);
-        Course updatedCourse = new Course(1L, 5, TypeCourse.COLLECTIVE_ADULT, Support.SNOWBOARD, 130.0f, 6, null);
-
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(existingCourse));
+        // Setup
+        Course updatedCourse = new Course(1L, 5, TypeCourse.INDIVIDUAL, Support.SNOWBOARD, 150.0f, 8, null);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(courseRepository.save(any(Course.class))).thenReturn(updatedCourse);
 
-        // ACT
+        // Execute
         Course result = courseService.updateCourse(updatedCourse);
 
-        // ASSERT
+        // Verify
         assertNotNull(result);
+        assertEquals(TypeCourse.INDIVIDUAL, result.getTypeCourse());
         assertEquals(5, result.getLevel());
         verify(courseRepository, times(1)).findById(1L);
-        verify(courseRepository, times(1)).save(any(Course.class));
+        verify(courseRepository, times(1)).save(updatedCourse);
     }
 
     @Test
     void testUpdateCourseNotFound() {
-        // ARRANGE
+        // Setup
         when(courseRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        Course updatedCourse = new Course(99L, 4, TypeCourse.COLLECTIVE_ADULT, Support.SNOWBOARD, 130.0f, 6, null);
+        // Execute
+        Course result = courseService.updateCourse(course);
 
-        // ACT
-        Course result = courseService.updateCourse(updatedCourse);
-
-        // ASSERT
+        // Verify
         assertNull(result);
-        verify(courseRepository, times(1)).findById(99L);
+        verify(courseRepository, times(1)).findById(anyLong());
         verify(courseRepository, never()).save(any(Course.class));
     }
+
+    @Test
+    void testUpdateCourseWithNullInput() {
+        Course result = courseService.updateCourse(null);
+        
+        assertNull(result);
+        verify(courseRepository, never()).findById(anyLong());
+        verify(courseRepository, never()).save(any(Course.class));
+    }
+
     @Test
     void testDeleteCourseSuccess() {
-        // ARRANGE
-        Long courseId = 1L;
-        when(courseRepository.existsById(courseId)).thenReturn(true);
-        doNothing().when(courseRepository).deleteById(courseId);
+        // Setup
+        when(courseRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(courseRepository).deleteById(1L);
 
-        // ACT
-        courseService.deleteCourse(courseId);
+        // Execute
+        courseService.deleteCourse(1L);
 
-        // ASSERT
-        verify(courseRepository, times(1)).existsById(courseId);
-        verify(courseRepository, times(1)).deleteById(courseId);
+        // Verify
+        verify(courseRepository, times(1)).existsById(1L);
+        verify(courseRepository, times(1)).deleteById(1L);
     }
 
     @Test
     void testDeleteCourseNotFound() {
-        // ARRANGE
-        Long courseId = 99L;
-        when(courseRepository.existsById(courseId)).thenReturn(false);
+        // Setup
+        when(courseRepository.existsById(99L)).thenReturn(false);
 
-        // ACT
-        courseService.deleteCourse(courseId);
+        // Execute
+        courseService.deleteCourse(99L);
 
-        // ASSERT
-        verify(courseRepository, times(1)).existsById(courseId);
+        // Verify
+        verify(courseRepository, times(1)).existsById(99L);
         verify(courseRepository, never()).deleteById(anyLong());
     }
 
+    @Test
+    void testDeleteCourseWithNullId() {
+        courseService.deleteCourse(null);
+        
+        verify(courseRepository, never()).existsById(anyLong());
+        verify(courseRepository, never()).deleteById(anyLong());
+    }
 }

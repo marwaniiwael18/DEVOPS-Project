@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,8 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
 public class CourseRestControllerTest {
-
-
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,6 +57,31 @@ public class CourseRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numCourse").value(course.getNumCourse()));
 
+        verify(courseServices, times(1)).addCourse(any(Course.class));
+    }
+
+    @Test
+    void testAddCourseInvalidData() throws Exception {
+        Course invalidCourse = new Course();
+        // Missing required fields
+        
+        mockMvc.perform(post("/course/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidCourse)))
+                .andExpect(status().isBadRequest());
+
+        verify(courseServices, never()).addCourse(any(Course.class));
+    }
+    
+    @Test
+    void testAddCourseServiceThrowsException() throws Exception {
+        when(courseServices.addCourse(any(Course.class))).thenThrow(RuntimeException.class);
+        
+        mockMvc.perform(post("/course/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(course)))
+                .andExpect(status().is5xxServerError());
+                
         verify(courseServices, times(1)).addCourse(any(Course.class));
     }
 
@@ -107,6 +129,18 @@ public class CourseRestControllerTest {
 
         verify(courseServices, times(1)).retrieveAllCourses();
     }
+    
+    @Test
+    void testGetAllCoursesEmpty() throws Exception {
+        when(courseServices.retrieveAllCourses()).thenReturn(Arrays.asList());
+        
+        mockMvc.perform(get("/course/all")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+                
+        verify(courseServices, times(1)).retrieveAllCourses();
+    }
 
     @Test
     void testUpdateCourseSuccess() throws Exception {
@@ -132,6 +166,20 @@ public class CourseRestControllerTest {
                         .content(objectMapper.writeValueAsString(updatedCourse)))
                 .andExpect(status().isNotFound());
     }
+    
+    @Test
+    void testUpdateCourseInvalidData() throws Exception {
+        Course invalidCourse = new Course();
+        // Empty course with only ID
+        invalidCourse.setNumCourse(1L);
+        
+        mockMvc.perform(put("/course/update")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidCourse)))
+                .andExpect(status().isBadRequest());
+                
+        verify(courseServices, never()).updateCourse(any(Course.class));
+    }
 
     @Test
     void testDeleteCourseSuccess() throws Exception {
@@ -154,6 +202,15 @@ public class CourseRestControllerTest {
 
         mockMvc.perform(delete("/course/delete/{id}", nonExistentId))
                 .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    void testDeleteCourseInvalidId() throws Exception {
+        mockMvc.perform(delete("/course/delete/invalid"))
+                .andExpect(status().isBadRequest());  // Now expecting 400 Bad Request
+                
+        verify(courseServices, never()).retrieveCourse(anyLong());
+        verify(courseServices, never()).deleteCourse(anyLong());
     }
 
     private Course createSampleCourse(Long id, int level, TypeCourse typeCourse, Support support, float price, int timeSlot) {

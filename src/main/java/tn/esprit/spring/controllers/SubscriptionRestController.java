@@ -48,4 +48,10 @@ public class SubscriptionRestController {
         return subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate);
     }
 
+    @Operation(description = "Retrieve All Subscriptions")
+    @GetMapping("/all")
+    public List<Subscription> getAllSubscriptions() {
+        return subscriptionServices.retrieveAllSubscriptions();
+    }
+
 }

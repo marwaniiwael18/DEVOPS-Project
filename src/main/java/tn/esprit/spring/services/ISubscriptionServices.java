@@ -9,15 +9,21 @@ import tn.esprit.spring.entities.TypeSubscription;
 
 public interface ISubscriptionServices {
 
-	Subscription addSubscription(Subscription subscription);
+    Subscription addSubscription(Subscription subscription);
 
-	Subscription updateSubscription(Subscription subscription);
+    Subscription updateSubscription(Subscription subscription);
 
-	Subscription retrieveSubscriptionById(Long numSubscription);
+    Subscription retrieveSubscriptionById(Long numSubscription);
 
-	Set<Subscription> getSubscriptionByType(TypeSubscription type);
+    Set<Subscription> getSubscriptionByType(TypeSubscription type);
 
-	List<Subscription> retrieveSubscriptionsByDates(LocalDate startDate, LocalDate endDate);
+    List<Subscription> retrieveSubscriptionsByDates(LocalDate startDate, LocalDate endDate);
 
-	void retrieveSubscriptions();
+    void retrieveSubscriptions();
+
+    /**
+     * Retrieves all subscriptions
+     * @return List of all subscriptions
+     */
+    List<Subscription> retrieveAllSubscriptions();
 }

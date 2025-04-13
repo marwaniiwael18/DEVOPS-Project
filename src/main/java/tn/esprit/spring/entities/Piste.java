@@ -4,13 +4,8 @@ import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.*;
+import lombok.*;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Getter
@@ -32,5 +27,10 @@ public class Piste implements Serializable {
 
 	@ManyToMany(mappedBy= "pistes")
 	Set<Skier> skiers;
-	
+
+	public Piste(Long numPiste, String namePiste, int length) {
+		this.numPiste = numPiste;
+		this.namePiste = namePiste;
+		this.length = length;
+	}
 }
