@@ -28,44 +28,40 @@ pipeline {
         }
 
         stage('Build & Test') {
-    steps {
-        // Exécute les tests et génère le rapport JaCoCo
-        sh 'mvn clean verify jacoco:report -Dspring.profiles.active=test -T 1C'
-        // Vérifie que le fichier jacoco.xml est généré
-        sh 'ls -l target/site/jacoco/jacoco.xml'
-    }
-}
-
-stage('Publish JaCoCo Report') {
-    steps {
-        // Publie le rapport JaCoCo dans Jenkins (optionnel pour SonarQube)
-        jacoco(execPattern: 'target/jacoco.exec', classPattern: 'target/classes', sourcePattern: 'src/main/java', exclusionPattern: '**/test/**')
-    }
-}
-
-stage('SonarQube Analysis') {
-    steps {
-        script {
-            echo "Using SonarQube URL: ${SONAR_URL}"
-            def scannerHome = tool 'SonarScan'
-            withSonarQubeEnv {
-                // Exécute l'analyse SonarQube avec les bons chemins
-                sh """
-                    ${scannerHome}/bin/sonar-scanner \
-                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                    -Dsonar.sources=src \
-                    -Dsonar.java.binaries=target/classes \
-                    -Dsonar.java.libraries=target/dependency/*.jar \
-                    -Dsonar.sourceEncoding=UTF-8 \
-                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                    -Dsonar.login=${SONAR_TOKEN} \
-                    -Dsonar.scanner.force-deprecated-java-version=true
-                """
+            steps {
+                sh 'mvn verify jacoco:report -Dspring.profiles.active=test -T 1C'
             }
         }
-    }
-}
+
+        stage('Publish JaCoCo Report') {
+            steps {
+                jacoco(execPattern: 'target/jacoco.exec', classPattern: 'target/classes', sourcePattern: 'src/main/java', exclusionPattern: '**/test/**')
+            }
+        }
+    
+
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    echo "Using SonarQube URL: ${SONAR_URL}"
+                    def scannerHome = tool 'SonarScan'
+                    withSonarQubeEnv {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=src \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -Dsonar.scanner.force-deprecated-java-version=true
+                        """
+                    }
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
