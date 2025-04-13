@@ -1,11 +1,10 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -15,21 +14,37 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@ToString
 public class Instructor implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long numInstructor;
+	Long numInstructor;
 
-	private String firstName;
+	@Column(nullable = false)
+	String firstName;
 
-	private String lastName;
+	@Column(nullable = false)
+	String lastName;
 
-	private LocalDate dateOfHire;
+	@Column(nullable = false)
+	LocalDate dateOfHire;
 
-	@OneToMany(mappedBy = "instructor")
-	private Set<Course> courses;
+	@OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
+	@JsonIgnore
+	Set<Course> courses = new HashSet<>();
 
-	// Add getters, setters, and other required annotations
+	// Utility method to manage bidirectional relationship
+	public void addCourse(Course course) {
+		courses.add(course);
+		course.setInstructor(this);
+	}
+
+	// Utility method to manage bidirectional relationship
+	public void removeCourse(Course course) {
+		courses.remove(course);
+		course.setInstructor(null);
+	}
 }

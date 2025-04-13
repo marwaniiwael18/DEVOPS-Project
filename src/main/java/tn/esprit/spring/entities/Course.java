@@ -1,40 +1,45 @@
 package tn.esprit.spring.entities;
 
-import java.io.Serializable;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level=AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@ToString
 public class Course implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long numCourse;
+	Long numCourse;
 
-	private Integer level;
+	@Column(nullable = false)
+	Integer level;
+
+	@Column(nullable = false)
+	Float price;
 
 	@Enumerated(EnumType.STRING)
-	private TypeCourse typeCourse;
+	@Column(nullable = false)
+	TypeCourse typeCourse;
 
 	@Enumerated(EnumType.STRING)
-	private Support support;
-
-	private Float price;
+	@Column(nullable = false)
+	Support support;
 
 	@ManyToOne
-	private Instructor instructor;
+	Instructor instructor;
 
-	// Add getters, setters, and other required annotations
+	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+	@JsonIgnore
+	Set<Registration> registrations = new HashSet<>();
 }
