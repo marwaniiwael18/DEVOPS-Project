@@ -72,7 +72,21 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${dockerHubRepo}:${imageTag} ."
+                script {
+                    // Create Dockerfile
+                    writeFile file: 'Dockerfile', text: '''
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+COPY target/*.jar /app/app.jar
+
+EXPOSE 8081
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+'''
+                    sh "docker build -t ${dockerHubRepo}:${imageTag} ."
+                }
             }
         }
 
@@ -89,19 +103,39 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    sh '''
-                        if [ "$(docker ps -a -q -f name=mysql_db)" ]; then
-                            echo "Removing existing mysql_db container..."
-                            docker rm -f mysql_db
-                        fi
+                    sh 'docker-compose down || true'
 
-                        docker-compose down || true
-                    '''
-
-                    sh "sed -i 's|marwaniwael/gestion-ski:IMAGE_TAG|${dockerHubRepo}:${imageTag}|g' docker-compose.yml"
-                    sh "cat docker-compose.yml"
-
-                    sh "IMAGE_TAG=${imageTag} docker-compose up -d"
+                    // Create docker-compose.yml
+                    writeFile file: 'docker-compose.yml', text: """
+version: '3'
+services:
+  spring_backend:
+    image: ${dockerHubRepo}:${imageTag}
+    container_name: spring_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: TestDbStrongP@ss123
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.H2Dialect
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      SPRING_H2_CONSOLE_PATH: /h2-console
+      SERVER_PORT: 8081
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      LOGGING_LEVEL_ROOT: info
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{45} - %msg %n"
+      TZ: Africa/Tunis
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+"""
+                    sh 'docker-compose up -d'
                 }
             }
         }
