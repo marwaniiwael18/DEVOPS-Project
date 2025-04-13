@@ -114,7 +114,7 @@ pipeline {
                   version: '3.8'
                   services:
                     spring_backend:
-                      image: ${dockerHubRepo}:${imageTag}
+                      image: ${imageName}:${imageTag}
                       container_name: spring_backend
                       environment:
                         SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
