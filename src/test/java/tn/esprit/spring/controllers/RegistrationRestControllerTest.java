@@ -57,12 +57,12 @@ public class RegistrationRestControllerTest {
     void testAddAndAssignToSkier() throws Exception {
         // Create a valid DTO
         RegistrationDTO registrationDTO = createSampleRegistrationDTO();
-        Registration registration = new Registration();
-        registration.setNumRegistration(1L);
-        registration.setNumWeek(10);
+        Registration returnedRegistration = new Registration();
+        returnedRegistration.setNumRegistration(1L);
+        returnedRegistration.setNumWeek(10);
         
         // Mock service methods correctly
-        when(registrationServices.addRegistrationAndAssignToSkier(any(), eq(1L))).thenReturn(registration);
+        when(registrationServices.addRegistrationAndAssignToSkier(any(), eq(1L))).thenReturn(returnedRegistration);
         
         // Perform the test
         mockMvc.perform(post("/registration/addAndAssignToSkier/1")
@@ -78,12 +78,12 @@ public class RegistrationRestControllerTest {
     void testAddAndAssignToSkierAndCourse() throws Exception {
         // Create a valid DTO
         RegistrationDTO registrationDTO = createSampleRegistrationDTO();
-        Registration registration = new Registration();
-        registration.setNumRegistration(1L);
-        registration.setNumWeek(10);
+        Registration createdRegistration = new Registration();
+        createdRegistration.setNumRegistration(1L);
+        createdRegistration.setNumWeek(10);
         
         // Mock service methods correctly
-        when(registrationServices.addRegistrationAndAssignToSkierAndCourse(any(), eq(1L), eq(2L))).thenReturn(registration);
+        when(registrationServices.addRegistrationAndAssignToSkierAndCourse(any(), eq(1L), eq(2L))).thenReturn(createdRegistration);
         
         // Perform the test
         mockMvc.perform(post("/registration/addAndAssignToSkierAndCourse/1/2")

@@ -59,11 +59,11 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
-        assertTrue(body.containsKey("message"));
+        assertTrue(body.containsKey(MESSAGE_KEY));
         assertTrue(body.containsKey("timestamp"));
-        assertTrue(body.containsKey("status"));
+        assertTrue(body.containsKey(STATUS_KEY));
         assertTrue(body.containsKey("details"));
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.get("status"));
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.get(STATUS_KEY));
     }
 
     @Test

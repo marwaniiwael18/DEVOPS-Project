@@ -374,9 +374,9 @@ class RegistrationServicesImplTest {
     @Test
     void testHandleUnknownCourseType() {
         // Setup
-        Skier testSkier = new Skier();
-        testSkier.setNumSkier(3L);
-        testSkier.setDateOfBirth(LocalDate.now().minusYears(20));
+        Skier adultSkier = new Skier();
+        adultSkier.setNumSkier(3L);
+        adultSkier.setDateOfBirth(LocalDate.now().minusYears(20));
 
         // Create a course with a valid type
         Course mockCourse = new Course();
@@ -384,10 +384,10 @@ class RegistrationServicesImplTest {
         // We need to set a valid enum value to avoid NPE
         mockCourse.setTypeCourse(TypeCourse.INDIVIDUAL);
         
-        Registration testRegistration = new Registration();
-        testRegistration.setNumWeek(3);
+        Registration newRegistration = new Registration();
+        newRegistration.setNumWeek(3);
         
-        when(skierRepository.findById(3L)).thenReturn(Optional.of(testSkier));
+        when(skierRepository.findById(3L)).thenReturn(Optional.of(adultSkier));
         when(courseRepository.findById(4L)).thenReturn(Optional.of(mockCourse));
         when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(
                 anyInt(), anyLong(), anyLong())).thenReturn(0L);
@@ -397,7 +397,7 @@ class RegistrationServicesImplTest {
         when(registrationRepository.save(any(Registration.class))).thenReturn(null);
 
         // Execute
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(testRegistration, 3L, 4L);
+        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(newRegistration, 3L, 4L);
 
         // Verify
         assertNull(result); // Result should be null as save returns null

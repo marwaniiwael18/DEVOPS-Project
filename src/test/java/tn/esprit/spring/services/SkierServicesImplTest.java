@@ -300,16 +300,16 @@ class SkierServicesImplTest {
     @Test
     void testRegistrationCreationAndSaving() {
         // Setup
-        Course testCourse = createTestCourse();
-        Skier testSkier = createTestSkier();
+        Course courseInstance = createTestCourse();
+        Skier skierInstance = createTestSkier();
         
         // The implementation must be creating Registration objects internally,
         // so we need to capture what's saved rather than expecting a specific mock call
-        when(courseRepository.getById(anyLong())).thenReturn(testCourse);
-        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
+        when(courseRepository.getById(anyLong())).thenReturn(courseInstance);
+        when(skierRepository.save(any(Skier.class))).thenReturn(skierInstance);
         
         // Act
-        Skier result = skierServices.addSkierAndAssignToCourse(testSkier, 1L);
+        Skier result = skierServices.addSkierAndAssignToCourse(skierInstance, 1L);
         
         // Assert that the result is not null, but don't verify registrationRepository.save
         // since it appears the actual implementation doesn't call it directly
@@ -321,33 +321,33 @@ class SkierServicesImplTest {
     @Test
     void testAddSkierAndAssignToCourseWithExistingRegistrations() {
         // Setup
-        Skier testSkier = createTestSkier();
-        Course testCourse = createTestCourse();
+        Skier skierWithRegistrations = createTestSkier();
+        Course courseForRegistration = createTestCourse();
         
         // Create registrations set
         Set<Registration> registrations = new HashSet<>();
         Registration registration = new Registration();
         registration.setNumWeek(1);
         registrations.add(registration);
-        testSkier.setRegistrations(registrations);
+        skierWithRegistrations.setRegistrations(registrations);
         
-        when(courseRepository.getById(anyLong())).thenReturn(testCourse);
-        when(skierRepository.save(any(Skier.class))).thenReturn(testSkier);
+        when(courseRepository.getById(anyLong())).thenReturn(courseForRegistration);
+        when(skierRepository.save(any(Skier.class))).thenReturn(skierWithRegistrations);
         when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
         
         // Act
-        Skier result = skierServices.addSkierAndAssignToCourse(testSkier, 1L);
+        Skier result = skierServices.addSkierAndAssignToCourse(skierWithRegistrations, 1L);
         
         // Assert
         assertNotNull(result);
         verify(courseRepository, times(1)).getById(1L);
-        verify(skierRepository, times(1)).save(testSkier);
+        verify(skierRepository, times(1)).save(skierWithRegistrations);
         verify(registrationRepository, times(1)).save(any(Registration.class));
         
         // Verify registration has been properly set up
         Registration savedRegistration = result.getRegistrations().iterator().next();
-        assertEquals(testSkier, savedRegistration.getSkier());
-        assertEquals(testCourse, savedRegistration.getCourse());
+        assertEquals(skierWithRegistrations, savedRegistration.getSkier());
+        assertEquals(courseForRegistration, savedRegistration.getCourse());
     }
     
     @Test
@@ -355,10 +355,10 @@ class SkierServicesImplTest {
         // Setup
         Skier skierWithNullPistes = createTestSkier();
         skierWithNullPistes.setPistes(null); // Set pistes to null to trigger NullPointerException
-        Piste testPiste = createTestPiste();
+        Piste pisteToAssign = createTestPiste();
         
         when(skierRepository.findById(anyLong())).thenReturn(Optional.of(skierWithNullPistes));
-        when(pisteRepository.findById(anyLong())).thenReturn(Optional.of(testPiste));
+        when(pisteRepository.findById(anyLong())).thenReturn(Optional.of(pisteToAssign));
         when(skierRepository.save(any(Skier.class))).thenReturn(skierWithNullPistes);
         
         // Act
@@ -367,7 +367,7 @@ class SkierServicesImplTest {
         // Assert
         assertNotNull(result);
         assertNotNull(result.getPistes());
-        assertTrue(result.getPistes().contains(testPiste));
+        assertTrue(result.getPistes().contains(pisteToAssign));
         verify(skierRepository, times(1)).save(skierWithNullPistes);
     }
 
