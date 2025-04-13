@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   spring_app:
-    image: YassineManai/gestion-ski:IMAGE_TAG
+    image: yassinemanai_4twin3_thunder_gestionski:IMAGE_TAG
     container_name: spring_backend
     environment:
       # H2 Database Configuration
