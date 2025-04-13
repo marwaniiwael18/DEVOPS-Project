@@ -47,51 +47,70 @@ public class RegistrationServicesImpl implements  IRegistrationServices{
             return null;
         }
 
-        if(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(registration.getNumWeek(), skier.getNumSkier(), course.getNumCourse()) >=1){
-            log.info("Sorry, you're already register to this course of the week :" + registration.getNumWeek());
+        if (isAlreadyRegistered(registration, skier, course)) {
+            log.info("Sorry, you're already registered to this course of the week: " + registration.getNumWeek());
             return null;
         }
 
         int ageSkieur = Period.between(skier.getDateOfBirth(), LocalDate.now()).getYears();
         log.info("Age " + ageSkieur);
 
+        return handleCourseType(registration, skier, course, ageSkieur);
+    }
+
+    private boolean isAlreadyRegistered(Registration registration, Skier skier, Course course) {
+        return registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(
+                registration.getNumWeek(), skier.getNumSkier(), course.getNumCourse()) >= 1;
+    }
+
+    private Registration handleCourseType(Registration registration, Skier skier, Course course, int ageSkieur) {
         switch (course.getTypeCourse()) {
             case INDIVIDUAL:
                 log.info("add without tests");
                 return assignRegistration(registration, skier, course);
 
             case COLLECTIVE_CHILDREN:
-                if (ageSkieur < 16) {
-                    log.info("Ok CHILD !");
-                    if (registrationRepository.countByCourseAndNumWeek(course, registration.getNumWeek()) < 6) {
-                        log.info("Course successfully added !");
-                        return assignRegistration(registration, skier, course);
-                    } else {
-                        log.info("Full Course ! Please choose another week to register !");
-                        return null;
-                    }
-                }
-                else{
-                    log.info("Sorry, your age doesn't allow you to register for this course ! \n Try to Register to a Collective Adult Course...");
-                }
-                break;
+                return handleChildrenCourse(registration, skier, course, ageSkieur);
 
             default:
-                if (ageSkieur >= 16) {
-                    log.info("Ok ADULT !");
-                    if (registrationRepository.countByCourseAndNumWeek(course, registration.getNumWeek()) < 6) {
-                        log.info("Course successfully added !");
-                        return assignRegistration(registration, skier, course);
-                    } else {
-                        log.info("Full Course ! Please choose another week to register !");
-                        return null;
-                    }
-                }
-                log.info("Sorry, your age doesn't allow you to register for this course ! \n Try to Register to a Collective Child Course...");
+                return handleAdultCourse(registration, skier, course, ageSkieur);
         }
-        return registration;
-
     }
+
+    private Registration handleChildrenCourse(Registration registration, Skier skier, Course course, int ageSkieur) {
+        if (ageSkieur < 16) {
+            log.info("Ok CHILD !");
+            if (isCourseAvailable(course, registration)) {
+                log.info("Course successfully added !");
+                return assignRegistration(registration, skier, course);
+            } else {
+                log.info("Full Course ! Please choose another week to register !");
+            }
+        } else {
+            log.info("Sorry, your age doesn't allow you to register for this course!\nTry to register to a Collective Adult Course...");
+        }
+        return null;
+    }
+
+    private Registration handleAdultCourse(Registration registration, Skier skier, Course course, int ageSkieur) {
+        if (ageSkieur >= 16) {
+            log.info("Ok ADULT !");
+            if (isCourseAvailable(course, registration)) {
+                log.info("Course successfully added !");
+                return assignRegistration(registration, skier, course);
+            } else {
+                log.info("Full Course ! Please choose another week to register !");
+            }
+        } else {
+            log.info("Sorry, your age doesn't allow you to register for this course!\nTry to register to a Collective Child Course...");
+        }
+        return null;
+    }
+
+    private boolean isCourseAvailable(Course course, Registration registration) {
+        return registrationRepository.countByCourseAndNumWeek(course, registration.getNumWeek()) < 6;
+    }
+
     private Registration assignRegistration (Registration registration, Skier skier, Course course){
         registration.setSkier(skier);
         registration.setCourse(course);

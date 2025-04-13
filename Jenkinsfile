@@ -100,6 +100,28 @@ pipeline {
                        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                    }
                }
+
+                   stage('Run Application') {
+                           steps {
+                               script {
+                                   docker.withRegistry("http://$registry", registryCredentials) {
+                                       sh "docker pull $registry/$imageName:$imageTag"
+
+                                       // Replace IMAGE_TAG dynamically in docker-compose.yml
+                                       sh "sed -i 's|localhost:8083/yassinemanai_4twin3_thunder_gestionski:IMAGE_TAG|$registry/$imageName:$imageTag|g' docker-compose.yml"
+                                       sh "cat docker-compose.yml" // Verification
+
+                                       // Cleanup existing containers to avoid conflicts
+                                       sh "docker-compose down --remove-orphans"
+
+                                       // Pass IMAGE_TAG explicitly to docker-compose
+                                       withEnv(["IMAGE_TAG=${imageTag}"]) {
+                                           sh "IMAGE_TAG=${imageTag} docker-compose up -d"
+                                       }
+                                   }
+                               }
+                           }
+                       }
     }
 
     post {

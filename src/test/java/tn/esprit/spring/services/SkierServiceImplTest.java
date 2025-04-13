@@ -149,7 +149,7 @@ class SkierServiceImplTest {
     }
 
     @Test
-    void testAssignSkierToSubscription_SkierNotFound() {
+    void shouldReturnNullWhenSkierNotFound() {
         when(skierRepository.findById(1L)).thenReturn(Optional.empty());
         when(subscriptionRepository.findById(1L)).thenReturn(Optional.of(new Subscription(1L, TypeSubscription.MONTHLY, LocalDate.now(), null)));
 
@@ -161,7 +161,7 @@ class SkierServiceImplTest {
     }
 
     @Test
-    void testAssignSkierToSubscription_SubscriptionNotFound() {
+    void shouldReturnNullWhenAssignSkierToSubscription_SubscriptionNotFound() {
         when(skierRepository.findById(1L)).thenReturn(Optional.of(new Skier(1L, "John", "Doe")));
         when(subscriptionRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -173,7 +173,7 @@ class SkierServiceImplTest {
     }
 
     @Test
-    void testAssignSkierToSubscription_Success() {
+    void shouldReturnNullWhenAssignSkierToSubscription_Success() {
         Skier skier = new Skier(1L, "John", "Doe");
         Subscription subscription = new Subscription(1L, TypeSubscription.MONTHLY, LocalDate.now(), null);
 
