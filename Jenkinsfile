@@ -51,10 +51,12 @@ pipeline {
                 script {
                     try {
                         sh """
+                            mvn clean verify
                             mvn sonar:sonar \
                             -Dsonar.projectKey=tn.esprit.myspringapp \
                             -Dsonar.host.url=${SONARQUBE_SERVER} \
-                            -Dsonar.login=${SONARQUBE_TOKEN}
+                            -Dsonar.login=${SONARQUBE_TOKEN} \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                         """
                     } catch (Exception e) {
                         echo "SonarQube analysis failed: ${e}"
@@ -63,7 +65,6 @@ pipeline {
                 }
             }
         }
-
         stage('Package Application') {
             steps {
                 script {
