@@ -73,7 +73,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Create Dockerfile
                     writeFile file: 'Dockerfile', text: '''
 FROM openjdk:17-jdk-slim
 
@@ -103,11 +102,14 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
         stage('Run Application') {
             steps {
                 script {
-                    sh 'docker-compose down || true'
+                    // Libère le port 8081 s’il est déjà utilisé
+                    sh 'fuser -k 8081/tcp || true'
 
-                    // Create docker-compose.yml
+                    // Arrêt des conteneurs existants et suppression des orphelins
+                    sh 'docker-compose down --remove-orphans || true'
+
                     writeFile file: 'docker-compose.yml', text: """
-version: '3'
+version: '3.8'
 services:
   spring_backend:
     image: ${dockerHubRepo}:${imageTag}
@@ -140,18 +142,22 @@ services:
             }
         }
 
-        stage("Run Prometheus") {
+        stage('Run Prometheus') {
             steps {
                 script {
-                    sh 'docker start prometheus || docker run -d --name prometheus -p 9090:9090 prom/prometheus'
+                    sh 'docker stop prometheus || true'
+                    sh 'docker rm prometheus || true'
+                    sh 'docker run -d --name prometheus -p 9090:9090 prom/prometheus'
                 }
             }
         }
 
-        stage("Run Grafana") {
+        stage('Run Grafana') {
             steps {
                 script {
-                    sh 'docker start grafana || docker run -d --name grafana -p 3000:3000 grafana/grafana'
+                    sh 'docker stop grafana || true'
+                    sh 'docker rm grafana || true'
+                    sh 'docker run -d --name grafana -p 3000:3000 grafana/grafana'
                 }
             }
         }
@@ -167,18 +173,11 @@ services:
                     <body>
                         <h2>✅ Build Successful: ${env.JOB_NAME}</h2>
                         <p>Build #${BUILD_NUMBER} completed successfully!</p>
-
-                        <h3>Build Info:</h3>
                         <ul>
-                            <li>Status: ${currentBuild.currentResult}</li>
-                            <li>Job: ${env.JOB_NAME}</li>
                             <li>Tag: ${dockerHubRepo}:${imageTag}</li>
                             <li>Build URL: <a href="${BUILD_URL}">${BUILD_URL}</a></li>
                             <li>Duration: ${currentBuild.durationString}</li>
                         </ul>
-
-                        <p><a href="${BUILD_URL}console">View Console Output</a></p>
-                        <p>-- Jenkins CI/CD</p>
                     </body>
                     </html>
                 """,
@@ -198,18 +197,11 @@ services:
                     <body>
                         <h2>❌ Build Failed: ${env.JOB_NAME}</h2>
                         <p>Build #${BUILD_NUMBER} has failed!</p>
-
-                        <h3>Build Info:</h3>
                         <ul>
-                            <li>Status: ${currentBuild.currentResult}</li>
-                            <li>Job: ${env.JOB_NAME}</li>
                             <li>Tag: ${dockerHubRepo}:${imageTag}</li>
                             <li>Build URL: <a href="${BUILD_URL}">${BUILD_URL}</a></li>
                             <li>Duration: ${currentBuild.durationString}</li>
                         </ul>
-
-                        <p><a href="${BUILD_URL}console">View Console Output</a></p>
-                        <p>-- Jenkins CI/CD</p>
                     </body>
                     </html>
                 """,
