@@ -141,7 +141,7 @@ pipeline {
                         sh """
                             docker run -d \
                             --name myspringapp-container \
-                            -p 8089:8080 \
+                            -p 8089:8089 \
                             -e SPRING_DATASOURCE_URL=jdbc:mysql://192.168.77.129:3306/stationSki?createDatabaseIfNotExist=true \
                             -e SPRING_DATASOURCE_USERNAME=root \
                             -e SPRING_DATASOURCE_PASSWORD= \
@@ -153,10 +153,30 @@ pipeline {
                         sh "docker ps | grep myspringapp-container"
 
                         // Wait for application to start up properly
-                        sh "sleep 10"
+                        sh "sleep 20"
 
-                        // Update health check to use port 8089
-                        sh "curl -s -o /dev/null -w '%{http_code}' http://localhost:8089/health || echo 'Health check failed'"
+                        // Check if application is responding
+                        sh "curl -s -o /dev/null -w '%{http_code}' http://localhost:8089/api/health || echo 'Health check failed'"
+
+                        // Try to open Swagger UI in a browser (depends on the Jenkins environment)
+                        if (isUnix()) {
+                            sh """
+                                (which xdg-open && xdg-open http://localhost:8089/api/swagger-ui.html) || \
+                                (which open && open http://localhost:8089/api/swagger-ui.html) || \
+                                echo "Could not automatically open browser"
+                            """
+                        } else {
+                            // For Windows
+                            bat "start http://localhost:8089/api/swagger-ui.html || echo Could not open browser"
+                        }
+
+                        // Print URLs for easy access
+                        echo "=========================================="
+                        echo "Application is now running!"
+                        echo "Swagger UI is available at: http://localhost:8089/api/swagger-ui.html"
+                        echo "Alternative Swagger UI: http://localhost:8089/api/swagger-ui/index.html"
+                        echo "API docs: http://localhost:8089/api/v3/api-docs"
+                        echo "=========================================="
                     }
                 }
             }
