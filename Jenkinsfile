@@ -44,6 +44,11 @@ pipeline {
                 }
             }
         }
+          stage('JaCoCo Report') {
+                    steps {
+                        jacoco(execPattern: 'target/jacoco.exec', classPattern: 'target/classes', sourcePattern: 'src/main/java', exclusionPattern: '**/test/**')
+                    }
+                }
 
         stage('SonarQube Analysis') {
             steps {

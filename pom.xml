@@ -84,6 +84,33 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.8</version>
+				<executions>
+					<!-- Activation de l'agent JaCoCo -->
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<!-- Génération du rapport XML (pour SonarQube) et HTML (pour Jenkins) -->
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>HTML</format> <!-- Rapport HTML pour Jenkins -->
+								<format>XML</format>  <!-- Rapport XML pour SonarQube -->
+							</formats>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
