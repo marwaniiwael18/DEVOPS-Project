@@ -36,8 +36,7 @@ public class InstructorRestController {
     @Operation(description = "Update Instructor ")
     @PutMapping("/update")
     public Instructor updateInstructor(@RequestBody Instructor Instructor){
-        return  instructorServices.updateInstructor(Instructor);
-    }
+        return  instructorServices.updateInstructor(Instructor);    }
 
     @Operation(description = "Retrieve Instructor by Id")
     @GetMapping("/get/{id-instructor}")
