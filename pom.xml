@@ -47,9 +47,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-boot-starter</artifactId>
-			<version>3.0.0</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.6.12</version>
 		</dependency>
 		<!-- Database Dependency -->
 		<dependency>
@@ -76,11 +76,11 @@
 			<version>1.6.12</version>
 		</dependency>
 
-		<!-- H2 for Testing -->
+		<!-- sql for Testing -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Testing Dependencies -->
