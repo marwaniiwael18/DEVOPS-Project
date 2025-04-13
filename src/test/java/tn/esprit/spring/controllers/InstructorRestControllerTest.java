@@ -82,6 +82,8 @@ public class InstructorRestControllerTest {
         validDTO.setFirstName(INSTRUCTOR_FIRST_NAME);
         validDTO.setLastName(INSTRUCTOR_LAST_NAME);
         validDTO.setDateOfHire(LocalDate.now());
+        validDTO.setCity("New York"); // Add required city field
+        validDTO.setEmail("instructor@example.com"); // Add an email
         
         // Mock controller behavior to bypass validation
         // This will make the controller return a successful response regardless of input
@@ -144,10 +146,12 @@ public class InstructorRestControllerTest {
     void testUpdateInstructorSuccess() throws Exception {
         // Create a complete and valid DTO
         instructorDTO = new InstructorDTO();
-        instructorDTO.setId(1L);
+        // No need to set ID anymore
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
+        instructorDTO.setCity("New York"); // Add required city field
+        instructorDTO.setEmail("instructor@example.com"); // Add an email
         
         instructor.setFirstName(UPDATED_FIRST_NAME);
         when(instructorServices.updateInstructor(any())).thenReturn(instructor);
@@ -165,10 +169,12 @@ public class InstructorRestControllerTest {
     void testUpdateInstructorNotFound() throws Exception {
         // Create a complete and valid DTO
         instructorDTO = new InstructorDTO();
-        instructorDTO.setId(1L);
+        // No need to set ID anymore
         instructorDTO.setFirstName(UPDATED_FIRST_NAME);
         instructorDTO.setLastName(INSTRUCTOR_LAST_NAME);
         instructorDTO.setDateOfHire(LocalDate.now());
+        instructorDTO.setCity("New York"); // Add required city field
+        instructorDTO.setEmail("instructor@example.com"); // Add an email
         
         when(instructorServices.updateInstructor(any())).thenReturn(null);
 

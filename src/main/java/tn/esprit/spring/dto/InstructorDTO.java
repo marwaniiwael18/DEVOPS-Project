@@ -16,9 +16,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstructorDTO {
-
-    private Long id;
-
     @NotBlank(message = "First name is required")
     @Size(max = 50, message = "First name cannot exceed 50 characters")
     private String firstName;
@@ -35,6 +32,4 @@ public class InstructorDTO {
 
     @Email(message = "Email should be valid")
     private String email;
-    
-    private String phone;
 }
