@@ -15,4 +15,5 @@ public interface ICourseServices {
     Course retrieveCourse(Long numCourse);
 
 
+    void deleteCourse(Long numCourse);
 }
