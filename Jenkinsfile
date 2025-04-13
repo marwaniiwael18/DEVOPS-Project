@@ -151,7 +151,13 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true
+                attachLog: true,
+                // Added explicit SMTP settings
+                smtp: 'smtp.gmail.com',
+                smtpPort: '587',
+                useSsl: false,
+                useTls: true,
+                auth: true
             )
         }
 
@@ -182,7 +188,13 @@ pipeline {
                 to: "${EMAIL_RECIPIENTS}",
                 from: "${EMAIL_SENDER}",
                 mimeType: 'text/html',
-                attachLog: true
+                attachLog: true,
+                // Added explicit SMTP settings
+                smtp: 'smtp.gmail.com',
+                smtpPort: '587',
+                useSsl: false,
+                useTls: true,
+                auth: true
             )
         }
     }
