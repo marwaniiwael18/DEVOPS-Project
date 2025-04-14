@@ -85,9 +85,6 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry("https://${dockerHubRegistry}", dockerHubCredentials) {
-                        // Verify login to Docker Hub
-                        sh "docker login -u aymenjallouli -p ${env.DOCKER_HUB_PASSWORD} ${dockerHubRegistry}"
-                        
                         // Tag and push the image
                         sh "docker tag $registry/$imageName:$imageTag $dockerHubRegistry/$imageName:$imageTag"
                         sh "docker push $dockerHubRegistry/$imageName:$imageTag"
