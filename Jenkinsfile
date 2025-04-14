@@ -3,10 +3,8 @@ pipeline {
 
     environment {
         registryCredentials = "nexus"
-        dockerHubCredentials = "DockerHub" 
-        registry = "localhost:8083"
-        dockerHubRegistry = "docker.io" // Docker Hub registry
-        imageName = "aymenjallouli/backend-springapp" 
+       registry = "localhost:8083"
+        imageName = "aymenjallouli_4twin3_thunder_gestionski"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
         gitBranch = "Aymenjallouli_4twin3_thunder"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
@@ -76,18 +74,6 @@ pipeline {
                 script {
                     docker.withRegistry("http://$registry", registryCredentials) {
                         sh "docker push --quiet $registry/$imageName:$imageTag"
-                    }
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry("https://${dockerHubRegistry}", dockerHubCredentials) {
-                        // Tag and push the image
-                        sh "docker tag $registry/$imageName:$imageTag $dockerHubRegistry/$imageName:$imageTag"
-                        sh "docker push $dockerHubRegistry/$imageName:$imageTag"
                     }
                 }
             }
