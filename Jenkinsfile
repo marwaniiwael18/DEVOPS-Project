@@ -6,7 +6,7 @@ pipeline {
         dockerHubCredentials = "DockerHub" // Docker Hub credentials ID
         registry = "localhost:8083"
         dockerHubRegistry = "docker.io" // Docker Hub registry
-        imageName = "aymenjallouli_4twin3_thunder_gestionski"
+        imageName = "aymenjallouli/backend-springapp" // Updated to include Docker Hub username
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
         gitBranch = "Aymenjallouli_4twin3_thunder"
         gitRepo = "https://github.com/marwaniiwael18/DEVOPS-Project.git"
