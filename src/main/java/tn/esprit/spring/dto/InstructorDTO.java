@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -32,4 +33,21 @@ public class InstructorDTO {
 
     @Email(message = "Email should be valid")
     private String email;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InstructorDTO that = (InstructorDTO) o;
+        return Objects.equals(firstName, that.firstName) &&
+               Objects.equals(lastName, that.lastName) &&
+               Objects.equals(dateOfHire, that.dateOfHire) &&
+               Objects.equals(city, that.city) &&
+               Objects.equals(email, that.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, dateOfHire, city, email);
+    }
 }

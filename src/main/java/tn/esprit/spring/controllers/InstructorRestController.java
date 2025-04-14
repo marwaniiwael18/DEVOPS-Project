@@ -36,8 +36,10 @@ public class InstructorRestController {
                 instructorDTO.getFirstName() == null || 
                 instructorDTO.getFirstName().trim().isEmpty() ||
                 instructorDTO.getLastName() == null || 
-                instructorDTO.getLastName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
+                instructorDTO.getLastName().trim().isEmpty() ||
+                instructorDTO.getEmail() == null || 
+                !instructorDTO.getEmail().contains("@")) { // Validate email format
+                return ResponseEntity.badRequest().build(); // Return 400 for invalid input
             }
             
             Instructor instructor = instructorMapper.toEntity(instructorDTO);
@@ -49,31 +51,34 @@ public class InstructorRestController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error adding instructor: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
-    
+
     @Operation(description = "Add Instructor and Assign To Course")
-    @PutMapping("/addAndAssignToCourse/{numCourse}")
-    public ResponseEntity<Map<String, Object>> addAndAssignToInstructor(@RequestBody InstructorDTO instructorDTO, @PathVariable("numCourse") String numCourse) {
+    @PostMapping("/addAndAssignToCourse/{courseId}")
+    public ResponseEntity<Map<String, Object>> addAndAssignToCourse(@RequestBody InstructorDTO dto, @PathVariable Long courseId) {
         try {
-            Long courseId = Long.parseLong(numCourse);
-            Instructor instructor = instructorMapper.toEntity(instructorDTO);
-            Instructor result = instructorServices.addInstructorAndAssignToCourse(instructor, courseId);
-            if (result == null) {
-                return ResponseEntity.notFound().build();
+            if (dto == null || dto.getFirstName() == null || dto.getFirstName().trim().isEmpty() ||
+                dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
+                return ResponseEntity.status(400).build(); // Return 400 for invalid input
             }
-            
-            // Create response with ID
-            Map<String, Object> response = createResponseWithId(result);
-            
+            Instructor instructor = instructorMapper.toEntity(dto);
+            Instructor savedInstructor = instructorServices.addInstructorAndAssignToCourse(instructor, courseId);
+            if (courseId <= 0) {
+                throw new IllegalArgumentException("Invalid course ID");
+            }
+            if (savedInstructor == null) {
+                return ResponseEntity.status(404).build(); // Return 404 if not found
+            }
+            Map<String, Object> response = createResponseWithId(savedInstructor);
             return ResponseEntity.ok(response);
-        } catch (NumberFormatException e) {
-            logger.error("Invalid course ID format: {}", numCourse);
-            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid course ID: {}", e.getMessage());
+            return ResponseEntity.status(400).build(); // Return 400 for invalid input
         } catch (Exception e) {
-            logger.error("Error assigning instructor to course: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error adding instructor and assigning to course: {}", e.getMessage());
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
     
@@ -88,22 +93,24 @@ public class InstructorRestController {
 
     @Operation(description = "Update Instructor ")
     @PutMapping("/update")
-    public ResponseEntity<Map<String, Object>> updateInstructor(@RequestBody InstructorDTO instructorDTO) {
+    public ResponseEntity<Map<String, Object>> updateInstructor(@RequestBody InstructorDTO dto) {
         try {
-            // We need to create a new entity with null id first
-            Instructor instructor = instructorMapper.toEntity(instructorDTO);
-            Instructor result = instructorServices.updateInstructor(instructor);
-            if (result == null) {
-                return ResponseEntity.notFound().build();
+            // Validate input to prevent null or invalid data
+            if (dto == null || dto.getFirstName() == null || dto.getFirstName().trim().isEmpty() ||
+                dto.getLastName() == null || dto.getLastName().trim().isEmpty()) {
+                return ResponseEntity.status(400).build(); // Return 400 for bad input
             }
-            
-            // Create response with ID
-            Map<String, Object> response = createResponseWithId(result);
-            
+
+            Instructor instructor = instructorMapper.toEntity(dto);
+            Instructor updatedInstructor = instructorServices.updateInstructor(instructor);
+            if (updatedInstructor == null) {
+                return ResponseEntity.status(404).build(); // Return 404 if not found
+            }
+            Map<String, Object> response = createResponseWithId(updatedInstructor);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error updating instructor: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
 

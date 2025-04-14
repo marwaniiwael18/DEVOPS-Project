@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tn.esprit.spring.dto.SubscriptionDTO; // Import SubscriptionDTO
 import tn.esprit.spring.entities.Subscription;
 import tn.esprit.spring.entities.TypeSubscription;
 import tn.esprit.spring.services.ISubscriptionServices;
@@ -311,5 +312,240 @@ public class SubscriptionRestControllertest {
                 .andExpect(jsonPath(JSON_PATH_ARRAY_SIZE, hasSize(0)));
         
         verify(subscriptionServices, times(1)).retrieveAllSubscriptions();
+    }
+
+    @Test
+    public void testAddSubscriptionWithNullResult() throws Exception {
+        // Prepare test data
+        Subscription subscription = new Subscription();
+        subscription.setNumSub(SUBSCRIPTION_ID_1);
+        subscription.setStartDate(LocalDate.now());
+        subscription.setEndDate(LocalDate.now().plusMonths(6));
+        subscription.setPrice(SUBSCRIPTION_PRICE_1);
+        subscription.setTypeSub(TypeSubscription.ANNUAL);
+
+        when(subscriptionServices.addSubscription(any(Subscription.class))).thenReturn(null);
+
+        // Perform test
+        mockMvc.perform(post(API_SUBSCRIPTION_ADD)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(subscription)))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, times(1)).addSubscription(any(Subscription.class));
+    }
+
+    @Test
+    public void testGetSubscriptionByIdNotFound() throws Exception {
+        when(subscriptionServices.retrieveSubscriptionById(SUBSCRIPTION_ID_1)).thenReturn(null);
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_GET, SUBSCRIPTION_ID_1))
+                .andExpect(status().isNotFound()); // Expect 404 Not Found
+
+        verify(subscriptionServices, times(1)).retrieveSubscriptionById(SUBSCRIPTION_ID_1);
+    }
+
+    @Test
+    public void testGetSubscriptionsByTypeEmptySet() throws Exception {
+        when(subscriptionServices.getSubscriptionByType(TypeSubscription.MONTHLY)).thenReturn(Set.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_TYPE, "MONTHLY"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty set
+
+        verify(subscriptionServices, times(1)).getSubscriptionByType(TypeSubscription.MONTHLY);
+    }
+
+    @Test
+    public void testUpdateSubscriptionNotFound() throws Exception {
+        // Prepare test data
+        Subscription subscription = new Subscription();
+        subscription.setNumSub(SUBSCRIPTION_ID_1);
+        subscription.setStartDate(LocalDate.now());
+        subscription.setEndDate(LocalDate.now().plusMonths(6));
+        subscription.setPrice(UPDATED_PRICE);
+        subscription.setTypeSub(TypeSubscription.ANNUAL);
+
+        when(subscriptionServices.updateSubscription(any(Subscription.class))).thenReturn(null);
+
+        // Perform test
+        mockMvc.perform(put(API_SUBSCRIPTION_UPDATE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(subscription)))
+                .andExpect(status().isNotFound()); // Expect 404 Not Found
+
+        verify(subscriptionServices, times(1)).updateSubscription(any(Subscription.class));
+    }
+
+    @Test
+    public void testGetSubscriptionsByDatesEmptyList() throws Exception {
+        LocalDate startDate = LocalDate.of(2023, 1, 1);
+        LocalDate endDate = LocalDate.of(2023, 12, 31);
+
+        when(subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate)).thenReturn(List.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_DATES, "2023-01-01", "2023-12-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty list
+
+        verify(subscriptionServices, times(1)).retrieveSubscriptionsByDates(startDate, endDate);
+    }
+
+    @Test
+    public void testGetAllSubscriptionsEmptyList() throws Exception {
+        when(subscriptionServices.retrieveAllSubscriptions()).thenReturn(List.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_ALL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty list
+
+        verify(subscriptionServices, times(1)).retrieveAllSubscriptions();
+    }
+
+    @Test
+    public void testAddSubscriptionInvalidInput() throws Exception {
+        // Prepare invalid subscription data (missing required fields)
+        SubscriptionDTO invalidSubscription = new SubscriptionDTO();
+        invalidSubscription.setPrice(-100.0f); // Invalid negative price
+
+        // Perform test
+        mockMvc.perform(post(API_SUBSCRIPTION_ADD)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidSubscription)))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, never()).addSubscription(any(Subscription.class));
+    }
+
+    @Test
+    public void testGetByIdInvalidId() throws Exception {
+        // Perform test with invalid ID
+        mockMvc.perform(get(API_SUBSCRIPTION_GET, -1L))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, never()).retrieveSubscriptionById(anyLong());
+    }
+
+    @Test
+    public void testGetSubscriptionsByTypeInvalidType() throws Exception {
+        // Perform test with invalid type
+        mockMvc.perform(get(API_SUBSCRIPTION_TYPE, "INVALID_TYPE"))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, never()).getSubscriptionByType(any(TypeSubscription.class));
+    }
+
+    @Test
+    public void testGetSubscriptionsByDatesInvalidRange() throws Exception {
+        // Prepare invalid date range (start date after end date)
+        String startDate = "2023-12-31";
+        String endDate = "2023-01-01";
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_DATES, startDate, endDate))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, never()).retrieveSubscriptionsByDates(any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    public void testUpdateSubscriptionInvalidInput() throws Exception {
+        // Prepare invalid subscription data (missing required fields)
+        SubscriptionDTO invalidSubscription = new SubscriptionDTO();
+        invalidSubscription.setNumSub(SUBSCRIPTION_ID_1);
+        invalidSubscription.setPrice(-50.0f); // Invalid negative price
+
+        // Perform test
+        mockMvc.perform(put(API_SUBSCRIPTION_UPDATE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidSubscription)))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, never()).updateSubscription(any(Subscription.class));
+    }
+
+    @Test
+    public void testGetAllSubscriptionsEmptyDatabase() throws Exception {
+        // Prepare empty database scenario
+        when(subscriptionServices.retrieveAllSubscriptions()).thenReturn(List.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_ALL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty list
+
+        verify(subscriptionServices, times(1)).retrieveAllSubscriptions();
+    }
+
+    @Test
+    public void testGetSubscriptionsByDatesNoResults() throws Exception {
+        // Prepare test data
+        LocalDate startDate = LocalDate.of(2023, 1, 1);
+        LocalDate endDate = LocalDate.of(2023, 12, 31);
+
+        when(subscriptionServices.retrieveSubscriptionsByDates(startDate, endDate)).thenReturn(List.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_DATES, "2023-01-01", "2023-12-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty list
+
+        verify(subscriptionServices, times(1)).retrieveSubscriptionsByDates(startDate, endDate);
+    }
+
+    @Test
+    public void testGetSubscriptionsByTypeNoResults() throws Exception {
+        // Prepare test data
+        when(subscriptionServices.getSubscriptionByType(TypeSubscription.MONTHLY)).thenReturn(Set.of());
+
+        // Perform test
+        mockMvc.perform(get(API_SUBSCRIPTION_TYPE, "MONTHLY"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty set
+
+        verify(subscriptionServices, times(1)).getSubscriptionByType(TypeSubscription.MONTHLY);
+    }
+
+    @Test
+    public void testAddSubscriptionReturnsNull() throws Exception {
+        // Prepare test data
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.setStartDate(LocalDate.now());
+        subscriptionDTO.setPrice(100.0f);
+        subscriptionDTO.setTypeSub(TypeSubscription.MONTHLY);
+
+        when(subscriptionServices.addSubscription(any(Subscription.class))).thenReturn(null);
+
+        // Perform test
+        mockMvc.perform(post(API_SUBSCRIPTION_ADD)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(subscriptionDTO)))
+                .andExpect(status().isBadRequest()); // Expect 400 Bad Request
+
+        verify(subscriptionServices, times(1)).addSubscription(any(Subscription.class));
+    }
+
+    @Test
+    public void testUpdateSubscriptionReturnsNull() throws Exception {
+        // Prepare test data
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.setNumSub(SUBSCRIPTION_ID_1);
+        subscriptionDTO.setStartDate(LocalDate.now());
+        subscriptionDTO.setPrice(UPDATED_PRICE);
+        subscriptionDTO.setTypeSub(TypeSubscription.ANNUAL);
+
+        when(subscriptionServices.updateSubscription(any(Subscription.class))).thenReturn(null);
+
+        // Perform test
+        mockMvc.perform(put(API_SUBSCRIPTION_UPDATE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(subscriptionDTO)))
+                .andExpect(status().isNotFound()); // Expect 404 Not Found
+
+        verify(subscriptionServices, times(1)).updateSubscription(any(Subscription.class));
     }
 }

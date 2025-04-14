@@ -28,12 +28,12 @@ public class RegistrationRestController {
             Registration registration = registrationMapper.toEntity(dto);
             Registration savedRegistration = registrationServices.addRegistrationAndAssignToSkier(registration, skierId);
             if (savedRegistration == null) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.status(404).build(); // Return 404 if not found
             }
             return ResponseEntity.ok(registrationMapper.toDTO(savedRegistration));
         } catch (Exception e) {
             logger.error("Error adding registration and assigning to skier: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
 
@@ -44,12 +44,15 @@ public class RegistrationRestController {
         try {
             Registration registration = registrationServices.assignRegistrationToCourse(numRegistration, numCourse);
             if (registration == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(404).build(); // Return 404 if not found
             }
             return ResponseEntity.ok(registrationMapper.toDTO(registration));
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid input for assigning registration to course: {}", e.getMessage());
+            return ResponseEntity.status(400).build(); // Return 400 for bad input
         } catch (Exception e) {
             logger.error("Error assigning registration to course: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
 
@@ -59,6 +62,9 @@ public class RegistrationRestController {
             @PathVariable Long numSkier,
             @PathVariable Long numCourse) {
         try {
+            if (dto == null || dto.getNumWeek() == null || dto.getNumWeek() <= 0) {
+                return ResponseEntity.badRequest().build(); // Return 400 for invalid input
+            }
             Registration registration = registrationMapper.toEntity(dto);
             Registration savedRegistration = registrationServices.addRegistrationAndAssignToSkierAndCourse(
                     registration, numSkier, numCourse);
@@ -68,7 +74,7 @@ public class RegistrationRestController {
             return ResponseEntity.ok(registrationMapper.toDTO(savedRegistration));
         } catch (Exception e) {
             logger.error("Error adding registration and assigning to skier and course: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
 
@@ -77,11 +83,18 @@ public class RegistrationRestController {
             @PathVariable Long numInstructor,
             @PathVariable Support support) {
         try {
+            // Always invoke the service method, even for invalid input
+            if (support == null) {
+                throw new IllegalArgumentException("Invalid support type");
+            }
             List<Integer> weeks = registrationServices.numWeeksCourseOfInstructorBySupport(numInstructor, support);
             return ResponseEntity.ok(weeks);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid support type: {}", e.getMessage());
+            return ResponseEntity.status(400).build(); // Return 400 for invalid input
         } catch (Exception e) {
             logger.error("Error retrieving weeks by instructor and support: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(500).build(); // Return 500 for server errors
         }
     }
 }

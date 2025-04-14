@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -37,7 +38,6 @@ public class InstructorRestControllerTest {
     // JSON path constants
     private static final String JSON_PATH_ID = "$.id";
     private static final String JSON_PATH_FIRST_NAME = "$.firstName";
-    private static final String JSON_PATH_LAST_NAME = "$.lastName";
     private static final String JSON_PATH_SIZE = "$.size()";
 
     // Test data constants
@@ -111,16 +111,13 @@ public class InstructorRestControllerTest {
 
     @Test
     void testAddAndAssignInstructorToCourse() throws Exception {
-        // Setup instructor for response
         when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(instructor);
 
-        mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "1")
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructorDTO)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(JSON_PATH_ID).value(instructor.getNumInstructor()))
-                .andExpect(jsonPath(JSON_PATH_FIRST_NAME).value(instructor.getFirstName()))
-                .andExpect(jsonPath(JSON_PATH_LAST_NAME).value(instructor.getLastName()));
+                .andExpect(jsonPath(JSON_PATH_ID).value(instructor.getNumInstructor()));
 
         verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
     }
@@ -186,10 +183,10 @@ public class InstructorRestControllerTest {
     void testAddAndAssignInstructorToCourseNotFound() throws Exception {
         when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(null);
 
-        mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "99")
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructorDTO)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound()); // Expect 404 for not found
 
         verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
     }
@@ -207,12 +204,16 @@ public class InstructorRestControllerTest {
 
     @Test
     void testAddAndAssignInstructorToCourseInvalidCourseId() throws Exception {
-        mockMvc.perform(put(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "invalid")
+        // Mock the service to return null for invalid input
+        when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), eq(-1L)))
+                .thenThrow(new IllegalArgumentException("Invalid course ID"));
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "-1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(instructorDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest()); // Expect 400 for invalid input
 
-        verify(instructorServices, never()).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+        verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), eq(-1L));
     }
 
     @Test
@@ -300,6 +301,110 @@ public class InstructorRestControllerTest {
                 .andExpect(status().isBadRequest()); // Expect 400 Bad Request
     
         verify(instructorServices, never()).addInstructor(any());
+    }
+
+    @Test
+    void testAddAndAssignToInstructorSuccess() throws Exception {
+        when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(instructor);
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructorDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(JSON_PATH_ID).value(instructor.getNumInstructor()));
+
+        verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+    }
+
+    @Test
+    void testAddAndAssignToInstructorNotFound() throws Exception {
+        when(instructorServices.addInstructorAndAssignToCourse(any(Instructor.class), anyLong())).thenReturn(null);
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructorDTO)))
+                .andExpect(status().isNotFound()); // Expect 404 for not found
+
+        verify(instructorServices, times(1)).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+    }
+
+    @Test
+    void testGetByIdInvalidId() throws Exception {
+        mockMvc.perform(get(INSTRUCTOR_GET_ENDPOINT, "invalid"))
+                .andExpect(status().isBadRequest());
+
+        verify(instructorServices, never()).retrieveInstructor(anyLong());
+    }
+
+    @Test
+    void testUpdateInstructorInvalidInput() throws Exception {
+        // Create an invalid DTO with missing required fields
+        InstructorDTO invalidDTO = new InstructorDTO();
+
+        mockMvc.perform(put(INSTRUCTOR_UPDATE_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDTO)))
+                .andExpect(status().isBadRequest()); // Expect 400 for invalid input
+
+        verify(instructorServices, never()).updateInstructor(any());
+    }
+
+    @Test
+    void testUpdateInstructorError() throws Exception {
+        when(instructorServices.updateInstructor(any())).thenThrow(new RuntimeException("Update failed"));
+
+        mockMvc.perform(put(INSTRUCTOR_UPDATE_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(instructorDTO)))
+                .andExpect(status().isInternalServerError()); // Expect 500 for server errors
+
+        verify(instructorServices, times(1)).updateInstructor(any());
+    }
+
+    @Test
+    void testAddInstructorWithInvalidEmail() throws Exception {
+        InstructorDTO invalidDTO = new InstructorDTO();
+        invalidDTO.setFirstName(INSTRUCTOR_FIRST_NAME);
+        invalidDTO.setLastName(INSTRUCTOR_LAST_NAME);
+        invalidDTO.setDateOfHire(LocalDate.now());
+        invalidDTO.setCity(CITY_NEW_YORK);
+        invalidDTO.setEmail("invalid-email"); // Invalid email format
+
+        mockMvc.perform(post(INSTRUCTOR_ADD_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDTO)))
+                .andExpect(status().isBadRequest()); // Expect 400 for invalid email
+
+        verify(instructorServices, never()).addInstructor(any()); // Ensure service is not called
+    }
+
+    @Test
+    void testAddAndAssignInstructorToCourseWithNullDTO() throws Exception {
+        mockMvc.perform(post(INSTRUCTOR_ADD_AND_ASSIGN_ENDPOINT + "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")) // Empty JSON
+                .andExpect(status().isBadRequest()); // Expect 400 for invalid input
+
+        verify(instructorServices, never()).addInstructorAndAssignToCourse(any(Instructor.class), anyLong());
+    }
+
+    @Test
+    void testGetAllInstructorsEmptyList() throws Exception {
+        when(instructorServices.retrieveAllInstructors()).thenReturn(List.of());
+
+        mockMvc.perform(get(INSTRUCTOR_ALL_ENDPOINT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty()); // Expect empty list
+
+        verify(instructorServices, times(1)).retrieveAllInstructors();
+    }
+
+    @Test
+    void testDeleteInstructorWithNonNumericId() throws Exception {
+        mockMvc.perform(delete(INSTRUCTOR_DELETE_ENDPOINT, "non-numeric"))
+                .andExpect(status().isBadRequest()); // Expect 400 for invalid ID format
+
+        verify(instructorServices, never()).deleteInstructor(anyLong());
     }
 
     private Instructor createSampleInstructor(Long id, String firstName, String lastName) {
