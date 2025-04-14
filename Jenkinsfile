@@ -3,7 +3,9 @@ pipeline {
 
     environment {
         registryCredentials = "nexus"
+        dockerHubCredentials = "DockerHub" // Docker Hub credentials ID
         registry = "localhost:8083"
+        dockerHubRegistry = "docker.io" // Docker Hub registry
         imageName = "aymenjallouli_4twin3_thunder_gestionski"
         imageTag = "6.0-SNAPSHOT-${env.BUILD_NUMBER}"
         gitBranch = "Aymenjallouli_4twin3_thunder"
@@ -74,6 +76,17 @@ pipeline {
                 script {
                     docker.withRegistry("http://$registry", registryCredentials) {
                         sh "docker push --quiet $registry/$imageName:$imageTag"
+                    }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry("https://${dockerHubRegistry}", dockerHubCredentials) {
+                        sh "docker tag $registry/$imageName:$imageTag $dockerHubRegistry/$imageName:$imageTag"
+                        sh "docker push $dockerHubRegistry/$imageName:$imageTag"
                     }
                 }
             }
