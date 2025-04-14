@@ -59,7 +59,7 @@ public class RegistrationRestControllerTest {
     @Test
     void testAddAndAssignToSkier() throws Exception {
         // Create a valid DTO
-        RegistrationDTO registrationDTO = createSampleRegistrationDTO();
+        RegistrationDTO validRegistrationDTO = createSampleRegistrationDTO(); // Renamed to avoid shadowing
         Registration returnedRegistration = new Registration();
         returnedRegistration.setNumRegistration(1L);
         returnedRegistration.setNumWeek(10);
@@ -70,7 +70,7 @@ public class RegistrationRestControllerTest {
         // Perform the test
         mockMvc.perform(post("/registration/addAndAssignToSkier/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registrationDTO)))
+                        .content(objectMapper.writeValueAsString(validRegistrationDTO)))
                 .andExpect(status().isOk());
         
         // Verify service was called
@@ -80,7 +80,7 @@ public class RegistrationRestControllerTest {
     @Test
     void testAddAndAssignToSkierAndCourse() throws Exception {
         // Create a valid DTO
-        RegistrationDTO registrationDTO = createSampleRegistrationDTO();
+        RegistrationDTO validRegistrationDTO = createSampleRegistrationDTO(); // Renamed to avoid shadowing
         Registration createdRegistration = new Registration();
         createdRegistration.setNumRegistration(1L);
         createdRegistration.setNumWeek(10);
@@ -91,7 +91,7 @@ public class RegistrationRestControllerTest {
         // Perform the test
         mockMvc.perform(post("/registration/addAndAssignToSkierAndCourse/1/2")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registrationDTO)))
+                        .content(objectMapper.writeValueAsString(validRegistrationDTO)))
                 .andExpect(status().isOk());
         
         // Verify service was called
