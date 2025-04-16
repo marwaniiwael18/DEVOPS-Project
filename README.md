@@ -1,26 +1,27 @@
-🚀 DevOps Pipeline – Ski Station Management Project
-Just wrapped up my DevOps project and I'm thrilled to showcase the CI/CD pipeline in action! This project focuses on automating the deployment and monitoring of a Ski Station Management system, with a full end-to-end DevOps setup.
+🚀 End-to-End DevOps Pipeline for Ski Station Management ⛷️
+Just wrapped up my DevOps project and I'm thrilled to showcase the CI/CD pipeline in action!
+This project demonstrates the automation of deployment, testing, and monitoring for a Ski Station Management system using a complete DevOps toolchain.
 
 🔧 Project Overview
-Title: Gestion d'une station de ski (Ski Station Management)
-Backend: Full CRUD system built with Spring Boot
+🎯 Title: Gestion d'une station de ski (Ski Station Management)
+🛠️ Backend: Full CRUD system built with Spring Boot
 
 🔁 CI/CD Pipeline Highlights
-✔️ Code Checkout from GitHub
+✅ Code Checkout from GitHub
 
-✔️ Maven Build with integrated Unit Testing
+🔨 Maven Build with integrated Unit Testing
 
-✔️ Code Coverage reports using JaCoCo
+📊 Code Coverage using JaCoCo
 
-✔️ Static Code Analysis powered by SonarQube
+🧼 Static Code Analysis with SonarQube
 
-✔️ Docker Image build & push to Nexus and Docker Hub
+🐳 Docker Image build & push to Nexus and Docker Hub
 
-✔️ Containerized Deployment using Docker Compose
+📦 Containerized Deployment via Docker Compose
 
-✔️ Monitoring with Prometheus and Grafana
+📈 Monitoring with Prometheus and Grafana
 
-✔️ Jenkins Notifications for build success/failure
+📬 Jenkins Notifications for success/failure
 
 🎯 Tools & Tech Stack
 Jenkins
@@ -42,4 +43,7 @@ Maven
 JaCoCo
 
 📽️ Watch It in Action
-Check out the full pipeline demo in the video below! https://www.linkedin.com/posts/wael-marwani-_devops-ciabrcd-jenkins-activity-7316530003792269313-Yzs0?utm_source=share&utm_medium=member_desktop&rcm=ACoAADTffyoBWZSdsSvKW9JfnrzTolT3l9OEdAQ
+🔗 👉 Full Pipeline Demo Video on LinkedIn
+
+📌 Hashtags
+#DevOps #CI_CD #Jenkins #Docker #SpringBoot #SonarQube #Grafana #Prometheus #Automation #SoftwareEngineering #FullStack #GestionSki #4TWIN3 #JaCoCo #Nexus
