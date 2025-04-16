@@ -32,7 +32,7 @@ public class Registration implements Serializable {
 
 	@JsonIgnore
 	@ManyToOne
-    Skier skier;
+	Skier skier;
 	@JsonIgnore
 	@ManyToOne
 	Course course;
