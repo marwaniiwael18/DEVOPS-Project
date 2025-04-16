@@ -8,42 +8,23 @@ This project demonstrates the automation of deployment, testing, and monitoring 
 
 🔁 CI/CD Pipeline Highlights
 ✅ Code Checkout from GitHub
-
 🔨 Maven Build with integrated Unit Testing
-
 📊 Code Coverage using JaCoCo
-
 🧼 Static Code Analysis with SonarQube
-
 🐳 Docker Image build & push to Nexus and Docker Hub
-
 📦 Containerized Deployment via Docker Compose
-
 📈 Monitoring with Prometheus and Grafana
-
 📬 Jenkins Notifications for success/failure
-
 🎯 Tools & Tech Stack
 Jenkins
-
 Docker & Docker Compose
-
 Nexus Repository
-
 SonarQube
-
 Grafana
-
 Prometheus
-
 Spring Boot
-
 Maven
-
 JaCoCo
-
 📽️ Watch It in Action
 🔗 👉 Full Pipeline Demo Video on LinkedIn
 
-📌 Hashtags
-#DevOps #CI_CD #Jenkins #Docker #SpringBoot #SonarQube #Grafana #Prometheus #Automation #SoftwareEngineering #FullStack #GestionSki #4TWIN3 #JaCoCo #Nexus
