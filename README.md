@@ -41,6 +41,5 @@ This project demonstrates the automation of deployment, testing, and monitoring 
 🔗 👉 [**Full Pipeline Demo Video on LinkedIn**](https://www.linkedin.com/posts/wael-marwani-_devops-ciabrcd-jenkins-activity-7316530003792269313-Yzs0?utm_source=share&utm_medium=member_desktop&rcm=ACoAADTffyoBWZSdsSvKW9JfnrzTolT3l9OEdAQ)
 
 ---
-![Screenshot 2025-04-25 at 15 18 54](https://github.com/user-attachments/assets/68ab6b14-ec5c-4177-967c-73faca62248d)
 
 
